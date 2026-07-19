@@ -54,5 +54,8 @@
     "typescript": "^5.7.2",
     "vite-plugin-solid": "^2.11.0",
     "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

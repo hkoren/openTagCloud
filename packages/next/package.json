@@ -1,7 +1,7 @@
 {
   "name": "@opentagcloud/next",
   "version": "0.3.0",
-  "description": "Next.js entry point for openTagCloud — re-exports the React adapter, which ships 'use client' and SSR-renders the no-JS fallback in the App Router.",
+  "description": "Next.js entry point for openTagCloud \u2014 re-exports the React adapter, which ships 'use client' and SSR-renders the no-JS fallback in the App Router.",
   "keywords": [
     "nextjs",
     "next",
@@ -49,5 +49,8 @@
   },
   "devDependencies": {
     "typescript": "^5.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

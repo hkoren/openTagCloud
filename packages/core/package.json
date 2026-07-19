@@ -1,7 +1,7 @@
 {
   "name": "@opentagcloud/core",
   "version": "0.3.0",
-  "description": "Framework-agnostic layout engine, vanilla-JS renderer, and stylesheet for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
+  "description": "Framework-agnostic layout engine, vanilla-JS renderer, and stylesheet for openTagCloud \u2014 a dependency-free, self-packing, SSR-friendly tag cloud.",
   "keywords": [
     "tag-cloud",
     "tagcloud",
@@ -45,7 +45,7 @@
     "./dist/opentagcloud.vanilla.js"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/emit-css.mjs && esbuild src/umd.ts --bundle --format=iife --global-name=openTagCloud --outfile=dist/opentagcloud.vanilla.js --banner:js=\"/* openTagCloud — script-tag build. window.openTagCloud.{mount,defineElement,renderTagCloud,...}; registers <otc-tag-cloud> automatically. Generated from src/umd.ts. */\"",
+    "build": "tsc -p tsconfig.json && node scripts/emit-css.mjs && esbuild src/umd.ts --bundle --format=iife --global-name=openTagCloud --outfile=dist/opentagcloud.vanilla.js --banner:js=\"/* openTagCloud \u2014 script-tag build. window.openTagCloud.{mount,defineElement,renderTagCloud,...}; registers <otc-tag-cloud> automatically. Generated from src/umd.ts. */\"",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
@@ -56,5 +56,8 @@
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

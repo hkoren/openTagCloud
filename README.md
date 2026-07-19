@@ -260,6 +260,20 @@ npm run dev        # Svelte demo app at /
 npm run check      # svelte-check on the Svelte package
 ```
 
+## Releasing
+
+```sh
+npm run release          # dry-run rehearsal: verify pipeline + npm publish --dry-run for every package
+npm run release -- --yes # publish to npm for real (requires npm login)
+```
+
+The script publishes in dependency order (core first, Angular from its
+ng-packagr `dist/`), skips versions that are already on the registry (so a
+partial run can be re-run), and supports `--tag <dist-tag>` and
+`--skip-verify`. First-time setup: `npm login`, and create the
+[`opentagcloud` npm org](https://www.npmjs.com/org/create) for the scoped
+packages.
+
 ## Credit
 
 Extracted from the home-page tag cloud on
