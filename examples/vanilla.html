@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>openTagCloud — vanilla / no-build example</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      /* Give the cloud a sized container; it fills it. */
+      #cloud {
+        height: 340px;
+        max-width: 720px;
+        margin: 1rem auto;
+        --otc-color: #334155;
+        --otc-hover-color: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>openTagCloud (vanilla)</h1>
+    <p>No framework, no build step — just a script tag.</p>
+    <div id="cloud"></div>
+
+    <h2>Custom element</h2>
+    <p>
+      The script tag also registers <code>&lt;otc-tag-cloud&gt;</code> — items
+      via a JSON attribute (or assign the <code>items</code> property from JS).
+    </p>
+    <otc-tag-cloud
+      style="height: 260px; max-width: 720px; margin: 1rem auto"
+      min-px="13"
+      max-px="42"
+      fill="height"
+      items='[
+      { "label": "Espresso", "weight": 90, "href": "#" },
+      { "label": "Latte", "weight": 70 },
+      { "label": "Cappuccino", "weight": 60 },
+      { "label": "Flat White", "weight": 45, "color": "#8d5524" },
+      { "label": "Cold Brew", "weight": 55 },
+      { "label": "Mocha", "weight": 35 },
+      { "label": "Ristretto", "weight": 20 },
+      { "label": "Macchiato", "weight": 30 }
+    ]'
+    ></otc-tag-cloud>
+
+    <script src="../dist/opentagcloud.vanilla.js"></script>
+    <script>
+      var items = [
+        { label: "JavaScript", weight: 95, href: "#" },
+        { label: "TypeScript", weight: 88, href: "#" },
+        { label: "Svelte", weight: 70 },
+        { label: "Rust", weight: 60, color: "#c0392b" },
+        { label: "Go", weight: 55 },
+        { label: "Python", weight: 82, color: "#2b8a3e" },
+        { label: "CSS", weight: 48 },
+        { label: "HTML", weight: 52 },
+        { label: "WebAssembly", weight: 33 },
+        { label: "Docker", weight: 41 },
+        { label: "GraphQL", weight: 37 },
+        { label: "SQL", weight: 45 },
+      ];
+      var cloud = openTagCloud.mount(document.getElementById("cloud"), items, {
+        minPx: 14,
+        maxPx: 46,
+      });
+    </script>
+  </body>
+</html>
