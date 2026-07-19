@@ -1,0 +1,57 @@
+{
+  "name": "@opentagcloud/vue",
+  "version": "0.3.0",
+  "description": "Vue 3 adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
+  "keywords": [
+    "vue",
+    "vue3",
+    "nuxt",
+    "tag-cloud",
+    "tagcloud",
+    "wordcloud",
+    "word-cloud",
+    "component"
+  ],
+  "license": "MIT",
+  "author": "Henry Koren",
+  "homepage": "https://github.com/hkoren/openTagCloud#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkoren/openTagCloud.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/hkoren/openTagCloud/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@opentagcloud/core": "^0.3.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0",
+    "vue": "^3.5.0"
+  }
+}

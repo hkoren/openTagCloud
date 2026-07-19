@@ -1,0 +1,50 @@
+{
+  "name": "@opentagcloud/core",
+  "version": "0.3.0",
+  "description": "Framework-agnostic layout engine, vanilla-JS renderer, and stylesheet for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
+  "keywords": [
+    "tag-cloud",
+    "tagcloud",
+    "wordcloud",
+    "word-cloud",
+    "vanilla",
+    "framework-agnostic"
+  ],
+  "license": "MIT",
+  "author": "Henry Koren",
+  "homepage": "https://github.com/hkoren/openTagCloud#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkoren/openTagCloud.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/hkoren/openTagCloud/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/emit-css.mjs",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  }
+}
