@@ -63,13 +63,13 @@ plain script — no bundler, no Svelte required. Load it and call `mount`:
 <script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
 <script>
   const items = [
-    { label: 'JavaScript', weight: 95, href: '/tags/javascript' },
-    { label: 'TypeScript', weight: 88 },
-    { label: 'Rust', weight: 60, color: '#c0392b' }
+    { label: "JavaScript", weight: 95, href: "/tags/javascript" },
+    { label: "TypeScript", weight: 88 },
+    { label: "Rust", weight: 60, color: "#c0392b" },
   ];
-  const cloud = openTagCloud.mount(document.getElementById('cloud'), items, {
+  const cloud = openTagCloud.mount(document.getElementById("cloud"), items, {
     minPx: 14,
-    maxPx: 44
+    maxPx: 44,
   });
   // cloud.update(newItems);  // re-render with new tags
   // cloud.destroy();         // remove observers + DOM
@@ -79,7 +79,7 @@ plain script — no bundler, no Svelte required. Load it and call `mount`:
 Or as an ES module (bundlers, `<script type="module">`, Deno):
 
 ```js
-import { mount } from 'opentagcloud/vanilla';
+import { mount } from "opentagcloud/vanilla";
 const cloud = mount(el, items, { minPx: 14, maxPx: 44 });
 ```
 
@@ -88,6 +88,35 @@ const cloud = mount(el, items, { minPx: 14, maxPx: 44 });
 accepts `minPx`, `maxPx`, and `fill`. Styling uses the same CSS custom properties
 (`--otc-color`, `--otc-hover-color`, per-tag `color`); the base rules are injected
 once into `<head>`. A runnable page is in [`examples/vanilla.html`](examples/vanilla.html).
+
+### Custom element
+
+The script-tag build also registers a light-DOM **custom element**, so a tag
+cloud is literally one tag — handy for CMS embeds and server-rendered pages:
+
+```html
+<script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
+
+<otc-tag-cloud
+  style="height: 320px"
+  min-px="14"
+  max-px="44"
+  items='[
+    { "label": "JavaScript", "weight": 95, "href": "/tags/javascript" },
+    { "label": "Rust", "weight": 60, "color": "#c0392b" }
+  ]'
+></otc-tag-cloud>
+```
+
+Pass items as a JSON `items` attribute, or assign the `items` **property** from
+JS (`el.items = [...]` — updates re-render in place). `min-px`, `max-px`, and
+`fill` attributes mirror the `mount` options. ES-module consumers register the
+element explicitly:
+
+```js
+import { defineElement } from "opentagcloud/vanilla";
+defineElement(); // or defineElement('my-tag-cloud')
+```
 
 ## Props
 

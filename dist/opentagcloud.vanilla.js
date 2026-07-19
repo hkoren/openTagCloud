@@ -1,13 +1,15 @@
-/* openTagCloud vanilla (UMD/global) build — see src/lib/vanilla.js for the
-   authored ESM source. Load via <script src="opentagcloud.vanilla.js"></script>
-   then call openTagCloud.mount(el, items, opts). Also works as CommonJS/AMD. */
+/* openTagCloud vanilla (UMD/global) build — generated from src/lib/vanilla.js
+   by scripts/build-vanilla-umd.mjs; do not edit directly. Load via
+   <script src="opentagcloud.vanilla.js"></script> then call
+   openTagCloud.mount(el, items, opts). The <otc-tag-cloud> custom element is
+   registered automatically. Also works as CommonJS/AMD. */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined'
     ? (module.exports = factory())
     : typeof define === 'function' && define.amd
       ? define(factory)
       : ((global = typeof globalThis !== 'undefined' ? globalThis : global || self),
-         (global.openTagCloud = factory()));
+        (global.openTagCloud = factory()));
 })(this, function () {
   'use strict';
 
@@ -33,7 +35,7 @@
  * (see the TagCloudItem type). Give the container a size; the cloud fills it.
  */
 
-const STYLE_ID = 'otc-vanilla-styles';
+const STYLE_ID = "otc-vanilla-styles";
 const CSS = `
 .otc-cloud { position: relative; flex: 1 1 auto; min-height: 0; }
 .otc-cloud .tag {
@@ -51,7 +53,7 @@ const CSS = `
 
 function injectStyles(doc) {
   if (doc.getElementById(STYLE_ID)) return;
-  const el = doc.createElement('style');
+  const el = doc.createElement("style");
   el.id = STYLE_ID;
   el.textContent = CSS;
   doc.head.appendChild(el);
@@ -75,7 +77,7 @@ function makeRng(seed) {
 
 const keyOf = (t) => (t.id != null ? t.id : t.label);
 // Render hyphens as non-breaking hyphens so multi-word tags don't wrap on them.
-const nbLabel = (name) => name.replace(/-/g, '‑');
+const nbLabel = (name) => name.replace(/-/g, "‑");
 
 /**
  * Mount a tag cloud into `container`.
@@ -85,18 +87,21 @@ const nbLabel = (name) => name.replace(/-/g, '‑');
  * @returns {{update:(items:Array)=>void, repack:()=>void, destroy:()=>void, el:HTMLElement}}
  */
 function mount(container, items, options) {
-  if (!container) throw new Error('openTagCloud.mount: container is required');
+  if (!container) throw new Error("openTagCloud.mount: container is required");
   const opts = options || {};
   const minPx = opts.minPx != null ? opts.minPx : 12;
   const maxPx = opts.maxPx != null ? opts.maxPx : 40;
   const fill = opts.fill;
-  const fillH = fill === 'height' || fill === 'both';
+  const fillH = fill === "height" || fill === "both";
 
   const doc = container.ownerDocument || document;
   injectStyles(doc);
 
-  const root = doc.createElement('div');
-  root.className = 'otc-cloud';
+  const root = doc.createElement("div");
+  root.className = "otc-cloud";
+  // fill='height'/'both' distributes against the root's own height, so the
+  // root must inherit the container's height even in a plain (non-flex) parent.
+  if (fillH) root.style.height = "100%";
   container.appendChild(root);
 
   // Font ramp constants (identical to the component).
@@ -109,10 +114,16 @@ function mount(container, items, options) {
 
   function lengthFactor(name) {
     const chars = name.length;
-    const longest = Math.max.apply(null, name.split(/\s+/).map((w) => w.length));
+    const longest = Math.max.apply(
+      null,
+      name.split(/\s+/).map((w) => w.length),
+    );
     return Math.max(
       0.45,
-      Math.min(Math.min(1, 15 / Math.max(15, chars)), 11 / Math.max(11, longest)),
+      Math.min(
+        Math.min(1, 15 / Math.max(15, chars)),
+        11 / Math.max(11, longest),
+      ),
     );
   }
   const fontPx = (w, name) => {
@@ -130,21 +141,24 @@ function mount(container, items, options) {
 
   function render() {
     maxW = Math.max.apply(null, [1].concat(current.map((t) => t.weight)));
-    countFactor = Math.min(1.1, Math.max(0.5, Math.sqrt(18 / Math.max(1, current.length))));
+    countFactor = Math.min(
+      1.1,
+      Math.max(0.5, Math.sqrt(18 / Math.max(1, current.length))),
+    );
 
-    root.classList.remove('packed');
-    root.style.minHeight = '';
-    root.textContent = '';
+    root.classList.remove("packed");
+    root.style.minHeight = "";
+    root.textContent = "";
     for (const t of current) {
       const fs = fontPx(t.weight, t.label).toFixed(1);
-      const tag = doc.createElement(t.href ? 'a' : 'span');
-      tag.className = 'tag' + (t.class ? ' ' + t.class : '');
+      const tag = doc.createElement(t.href ? "a" : "span");
+      tag.className = "tag" + (t.class ? " " + t.class : "");
       tag.dataset.fs = fs;
-      tag.style.fontSize = fs + 'px';
+      tag.style.fontSize = fs + "px";
       tag.style.opacity = opacity(t.weight).toFixed(2);
-      if (t.color) tag.style.setProperty('--otc-tag-color', t.color);
+      if (t.color) tag.style.setProperty("--otc-tag-color", t.color);
       tag.title = t.title != null ? t.title : String(t.weight);
-      if (t.href) tag.setAttribute('href', t.href);
+      if (t.href) tag.setAttribute("href", t.href);
       tag.textContent = nbLabel(t.label);
       root.appendChild(tag);
     }
@@ -152,28 +166,36 @@ function mount(container, items, options) {
   }
 
   function pack() {
-    const tags = Array.prototype.slice.call(root.querySelectorAll('.tag'));
+    const tags = Array.prototype.slice.call(root.querySelectorAll(".tag"));
     if (!tags.length) return;
     const W = root.clientWidth;
     if (W < 2) return;
     lastW = W;
 
-    root.classList.remove('packed');
+    root.classList.remove("packed");
     for (const el of tags) {
-      el.style.position = '';
-      el.style.left = '';
-      el.style.top = '';
+      el.style.position = "";
+      el.style.left = "";
+      el.style.top = "";
     }
 
     const wide = W >= 380;
     for (const el of tags) {
-      el.style.whiteSpace = wide ? 'nowrap' : 'normal';
-      el.style.maxWidth = wide ? Math.round(W * 0.6) + 'px' : 'min(6.5em, 100%)';
+      el.style.whiteSpace = wide ? "nowrap" : "normal";
+      el.style.maxWidth = wide
+        ? Math.round(W * 0.6) + "px"
+        : "min(6.5em, 100%)";
       el.style.fontSize =
-        Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W)).toFixed(1) + 'px';
+        Math.max(8, parseFloat(el.dataset.fs || "12") * widthFactor(W)).toFixed(
+          1,
+        ) + "px";
     }
 
-    let dims = tags.map((el) => ({ el, w: el.offsetWidth, h: el.offsetHeight }));
+    let dims = tags.map((el) => ({
+      el,
+      w: el.offsetWidth,
+      h: el.offsetHeight,
+    }));
     const area = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
     const LOOSEN = 1.4;
     const availH = (area * LOOSEN) / W;
@@ -181,7 +203,7 @@ function mount(container, items, options) {
     for (const d of dims) {
       if (d.w > W) {
         const cur = parseFloat(d.el.style.fontSize) || 12;
-        d.el.style.fontSize = Math.max(9, cur * (W / d.w)).toFixed(1) + 'px';
+        d.el.style.fontSize = Math.max(9, cur * (W / d.w)).toFixed(1) + "px";
         d.w = d.el.offsetWidth;
         d.h = d.el.offsetHeight;
       }
@@ -196,20 +218,28 @@ function mount(container, items, options) {
     const cellH = boxH / rows;
     const cells = [];
     for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++) cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
+      for (let c = 0; c < cols; c++)
+        cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
 
     const cx0 = W / 2;
     const cy0 = boxH / 2;
     const remaining = cells.slice();
     const ordered = [];
-    remaining.sort((a, b) => Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0));
+    remaining.sort(
+      (a, b) =>
+        Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0),
+    );
     ordered.push(remaining.shift());
     while (remaining.length) {
       let bi = 0;
       let bd = -1;
       for (let i = 0; i < remaining.length; i++) {
         let md = Infinity;
-        for (const o of ordered) md = Math.min(md, Math.hypot(remaining[i].x - o.x, remaining[i].y - o.y));
+        for (const o of ordered)
+          md = Math.min(
+            md,
+            Math.hypot(remaining[i].x - o.x, remaining[i].y - o.y),
+          );
         if (md > bd) {
           bd = md;
           bi = i;
@@ -218,11 +248,17 @@ function mount(container, items, options) {
       ordered.push(remaining.splice(bi, 1)[0]);
     }
 
-    const order = dims.map((_, i) => i).sort((a, b) => current[b].weight - current[a].weight);
+    const order = dims
+      .map((_, i) => i)
+      .sort((a, b) => current[b].weight - current[a].weight);
     const placed = [];
     const hits = (x, y, w, h) =>
       placed.some(
-        (r) => x < r.x + r.w + PAD && x + w + PAD > r.x && y < r.y + r.h + PAD && y + h + PAD > r.y,
+        (r) =>
+          x < r.x + r.w + PAD &&
+          x + w + PAD > r.x &&
+          y < r.y + r.h + PAD &&
+          y + h + PAD > r.y,
       );
 
     const pos = new Array(n);
@@ -251,17 +287,17 @@ function mount(container, items, options) {
       maxY = Math.max(maxY, y + h);
     });
 
-    for (const el of tags) el.style.position = 'absolute';
+    for (const el of tags) el.style.position = "absolute";
     base = dims.map((d, i) => ({ x: pos[i].x, y: pos[i].y, h: d.h }));
     packH = Math.ceil(maxY);
-    root.classList.add('packed');
-    root.style.minHeight = packH + 'px';
+    root.classList.add("packed");
+    root.style.minHeight = packH + "px";
     distribute();
   }
 
   function distribute() {
     if (!base.length) return;
-    const tags = Array.prototype.slice.call(root.querySelectorAll('.tag'));
+    const tags = Array.prototype.slice.call(root.querySelectorAll(".tag"));
     const H = root.clientHeight;
     lastH = H;
     let sy = 1;
@@ -275,8 +311,8 @@ function mount(container, items, options) {
       const b = base[i];
       if (!b) return;
       const top = sy === 1 ? b.y : Math.min(b.y * sy, Math.max(0, H - b.h));
-      el.style.left = Math.round(b.x) + 'px';
-      el.style.top = Math.round(top) + 'px';
+      el.style.left = Math.round(b.x) + "px";
+      el.style.top = Math.round(top) + "px";
     });
   }
 
@@ -285,10 +321,11 @@ function mount(container, items, options) {
     else if (Math.abs(root.clientHeight - lastH) > 1) distribute();
   };
 
-  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(onResize) : null;
+  const ro =
+    typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null;
   if (ro) ro.observe(root);
   const win = doc.defaultView || window;
-  win.addEventListener('resize', onResize);
+  win.addEventListener("resize", onResize);
   if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(() => pack());
 
   render();
@@ -302,11 +339,115 @@ function mount(container, items, options) {
     repack: pack,
     destroy() {
       if (ro) ro.disconnect();
-      win.removeEventListener('resize', onResize);
+      win.removeEventListener("resize", onResize);
       if (root.parentNode) root.parentNode.removeChild(root);
     },
   };
 }
 
-  return { mount: mount, default: { mount: mount } };
+/**
+ * Register the `<otc-tag-cloud>` custom element (light DOM, built on `mount`).
+ *
+ * Items are passed either as a JSON `items` attribute (no-JS-framework usage)
+ * or by assigning the `items` property (arrays don't survive attributes).
+ * Options map to `min-px`, `max-px`, and `fill` attributes. Give the element a
+ * height (it defaults itself to `display: block`); it fills it.
+ *
+ * The UMD/script-tag build calls this automatically; ESM consumers opt in:
+ *
+ *   import { defineElement } from 'opentagcloud/vanilla';
+ *   defineElement(); // <otc-tag-cloud> is now available
+ *
+ * @param {string} [tagName='otc-tag-cloud'] Custom element name to register.
+ */
+function defineElement(tagName) {
+  const name = tagName || "otc-tag-cloud";
+  if (typeof customElements === "undefined" || customElements.get(name)) return;
+
+  class OtcTagCloudElement extends HTMLElement {
+    static get observedAttributes() {
+      return ["items", "min-px", "max-px", "fill"];
+    }
+
+    constructor() {
+      super();
+      /** @type {ReturnType<typeof mount> | null} */
+      this._handle = null;
+      /** @type {Array | null} set via the `items` property; wins over the attribute */
+      this._items = null;
+    }
+
+    get items() {
+      if (this._items) return this._items;
+      const raw = this.getAttribute("items");
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn(
+          "openTagCloud: invalid JSON in <" + name + "> items attribute",
+        );
+        return [];
+      }
+    }
+
+    set items(value) {
+      this._items = value || [];
+      if (this._handle) this._handle.update(this._items);
+    }
+
+    connectedCallback() {
+      if (!this.style.display) this.style.display = "block";
+      this._mount();
+    }
+
+    disconnectedCallback() {
+      if (this._handle) {
+        this._handle.destroy();
+        this._handle = null;
+      }
+    }
+
+    attributeChangedCallback(attr) {
+      if (!this.isConnected || !this._handle) return;
+      if (attr === "items") {
+        // the property, once set, owns the data
+        if (!this._items) this._handle.update(this.items);
+      } else {
+        // min-px / max-px / fill are fixed at mount time — remount
+        this._handle.destroy();
+        this._handle = null;
+        this._mount();
+      }
+    }
+
+    _mount() {
+      if (this._handle) return;
+      const num = (attr) => {
+        const v = parseFloat(this.getAttribute(attr) || "");
+        return isFinite(v) ? v : undefined;
+      };
+      const fill = /** @type {'width'|'height'|'both'|undefined} */ (
+        this.getAttribute("fill") || undefined
+      );
+      this._handle = mount(this, this.items, {
+        minPx: num("min-px"),
+        maxPx: num("max-px"),
+        fill: fill,
+      });
+    }
+  }
+
+  customElements.define(name, OtcTagCloudElement);
+}
+
+
+  // Script-tag convenience: register the <otc-tag-cloud> custom element.
+  if (typeof customElements !== 'undefined') defineElement();
+
+  return {
+    mount: mount,
+    defineElement: defineElement,
+    default: { mount: mount, defineElement: defineElement },
+  };
 });
