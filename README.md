@@ -1,1 +1,142 @@
 # openTagCloud
+
+A dependency-free, self-packing, SSR-friendly **tag cloud** component for
+**Svelte 5**.
+
+Terms are laid out by a lightweight packer that seeds the heaviest tags across
+the container and spirals the rest out from their anchors until nothing
+overlaps — so the cloud **fills its container** at any size or aspect ratio
+instead of blobbing in the middle. The scatter is **deterministic** (seeded per
+tag), so server-rendered and hydrated output match and the layout is stable
+across renders.
+
+- 🪶 **Zero runtime dependencies** — just Svelte 5.
+- 📐 **Responsive** — re-packs on width changes, re-distributes on height changes
+  (loop-safe: it never feeds its own height back into layout).
+- 🖥️ **SSR-friendly** — renders a sensible justified fallback before/without JS.
+- 🎨 **Themeable** — plain CSS custom properties; inherits `currentColor` by default.
+- 🔗 **Links or plain text** — a tag with an `href` renders as an `<a>`, otherwise a `<span>`.
+
+## Install
+
+```sh
+npm install opentagcloud
+```
+
+Or straight from GitHub:
+
+```sh
+npm install github:hkoren/openTagCloud
+```
+
+Svelte 5 is a peer dependency.
+
+## Usage
+
+```svelte
+<script lang="ts">
+  import { TagCloud, type TagCloudItem } from 'opentagcloud';
+
+  const items: TagCloudItem[] = [
+    { label: 'JavaScript', weight: 95, href: '/tags/javascript' },
+    { label: 'TypeScript', weight: 88, href: '/tags/typescript' },
+    { label: 'Svelte', weight: 70, href: '/tags/svelte' },
+    { label: 'Rust', weight: 60, href: '/tags/rust' },
+    { label: 'Go', weight: 55 } // no href → renders as a <span>
+  ];
+</script>
+
+<!-- Give the cloud a sized container; it fills it. -->
+<div style="height: 320px">
+  <TagCloud {items} />
+</div>
+```
+
+## Props
+
+| Prop    | Type                            | Default | Description                                                                 |
+| ------- | ------------------------------- | ------- | --------------------------------------------------------------------------- |
+| `items` | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                          |
+| `minPx` | `number`                        | `12`    | Font size (px) of the lightest tag.                                         |
+| `maxPx` | `number`                        | `40`    | Font size (px) of the heaviest tag.                                         |
+| `fill`  | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling). |
+
+### `TagCloudItem`
+
+| Field    | Type      | Description                                                                         |
+| -------- | --------- | ----------------------------------------------------------------------------------- |
+| `label`  | `string`  | Text to display. Hyphens render as non-breaking hyphens so tags don't wrap on them. |
+| `weight` | `number`  | Relative importance — drives font size. Any positive number.                        |
+| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.         |
+| `id`     | `string?` | Stable identity for the scatter seed + keyed each. Defaults to `label`.             |
+| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                  |
+| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                     |
+
+## Sizing
+
+The component is `position: relative` and fills its parent. **Give the parent a
+height** (fixed, `flex`, or a grid row) — the cloud packs to that width and
+grows its `min-height` to fit. `minPx`/`maxPx` set the font range; the packer
+also scales fonts down for many/long tags and narrow containers.
+
+## Theming
+
+Style it with CSS custom properties (all optional):
+
+| Property            | Default        | Description               |
+| ------------------- | -------------- | ------------------------- |
+| `--otc-color`       | `currentColor` | Tag text color.           |
+| `--otc-hover-color` | `#2563eb`      | Link hover/focus color.   |
+| `--otc-transition`  | `150ms ease`   | Color/opacity transition. |
+
+```svelte
+<div style="--otc-color:#a7b0c0; --otc-hover-color:#66e0c0; height:320px">
+  <TagCloud {items} />
+</div>
+```
+
+For per-tag styling (e.g. to highlight some tags), pass a `class` on the item and
+target it with a global rule:
+
+```svelte
+<TagCloud items={[{ label: 'Deprecated', weight: 20, class: 'muted' }]} />
+
+<style>
+  :global(.tag.muted) {
+    color: #c0392b;
+  }
+</style>
+```
+
+Lighter tags render at lower opacity (heavier = more prominent); hovering a link
+brings it to full opacity.
+
+## How it works
+
+1. Measure each tag at a width-scaled font size.
+2. Build an anchor grid sized to the container's aspect ratio, ordered
+   farthest-point-first from the center so the heaviest tag lands centrally and
+   the rest spread to the edges and corners.
+3. Spiral each tag out from its anchor (seeded RNG) until it no longer overlaps.
+4. On resize: re-pack on width changes, re-distribute positions on height changes.
+
+Because tags are absolutely positioned, moving them can never change the
+container's own height — the layout can't feed back on itself.
+
+## Development
+
+```sh
+npm install
+npm run dev        # demo app at /
+npm run check      # svelte-check
+npm run package    # build the publishable package into dist/
+```
+
+## Credit
+
+Extracted from the home-page tag cloud on
+[neurotransmission.net](https://neurotransmission.net).
+
+## License
+
+[MIT](./LICENSE) © Henry Koren
