@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>openTagCloud vanilla/UMD fixture</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mount-box" style="width: 600px; height: 300px"></div>
+    <otc-tag-cloud
+      id="element"
+      style="width: 600px; height: 260px"
+      fill="height"
+      items='[
+        { "label": "Espresso", "weight": 90, "href": "#e" },
+        { "label": "Latte", "weight": 70 },
+        { "label": "Cappuccino", "weight": 60 },
+        { "label": "Cold Brew", "weight": 55 },
+        { "label": "Mocha", "weight": 35, "color": "tomato" },
+        { "label": "Ristretto", "weight": 20 }
+      ]'
+    ></otc-tag-cloud>
+    <script src="/core/opentagcloud.vanilla.js"></script>
+    <script>
+      window.cloud = openTagCloud.mount(
+        document.getElementById('mount-box'),
+        [
+          { label: 'JavaScript', weight: 95, href: '#js' },
+          { label: 'Rust', weight: 60 },
+          { label: 'Go', weight: 55 },
+          { label: 'Python', weight: 82 },
+        ],
+        { minPx: 14, maxPx: 44 },
+      );
+    </script>
+  </body>
+</html>

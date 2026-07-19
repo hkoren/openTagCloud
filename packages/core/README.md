@@ -27,6 +27,28 @@ Give the container a sized parent; the cloud packs to its width and grows its
 server-rendered pages, also ship `@opentagcloud/core/styles.css` so the no-JS
 fallback (justified inline flow) is styled before hydration.
 
+## Script tag / custom element (no build step)
+
+The package also ships a browser global (`dist/opentagcloud.vanilla.js`, the
+`unpkg`/`jsdelivr` entry) that registers a light-DOM `<otc-tag-cloud>` custom
+element and exposes `openTagCloud.mount(container, items, options)`:
+
+```html
+<script src="https://unpkg.com/@opentagcloud/core/dist/opentagcloud.vanilla.js"></script>
+
+<otc-tag-cloud
+  style="height: 320px"
+  items='[{ "label": "Rust", "weight": 60 }]'
+>
+</otc-tag-cloud>
+```
+
+`mount()` and `defineElement()` are also exported from the package root and the
+`./vanilla` subpath for ES-module consumers (call `defineElement()` to register
+the element). Both are thin wrappers over `renderTagCloud` — same engine, same
+markup contract. A runnable page is in
+[`examples/vanilla.html`](examples/vanilla.html).
+
 ## Building your own adapter
 
 - `prepareTags(items, { minPx, maxPx })` — pure and DOM-free: returns each

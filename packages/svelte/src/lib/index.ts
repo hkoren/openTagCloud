@@ -1,2 +1,8 @@
 export { default as TagCloud } from './TagCloud.svelte';
-export type { TagCloudItem, Fill } from '@opentagcloud/core';
+export { mount, defineElement } from '@opentagcloud/core';
+export type {
+  TagCloudItem,
+  Fill,
+  MountOptions,
+  CloudHandle,
+} from '@opentagcloud/core';

@@ -17,6 +17,8 @@ export interface RenderOptions extends PrepareOptions {
 export interface TagCloudHandle {
   /** Replace the items and re-pack. */
   update(items: TagCloudItem[]): void;
+  /** Force a re-pack (e.g. after external style changes). */
+  repack(): void;
   /** Change the fill mode. */
   setFill(fill: Fill | undefined): void;
   /** Stop observing and remove the rendered tags. */
@@ -73,6 +75,9 @@ export function renderTagCloud(
   return {
     update(next) {
       render(next);
+      layout.refresh();
+    },
+    repack() {
       layout.refresh();
     },
     setFill(fill) {

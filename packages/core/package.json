@@ -29,20 +29,30 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./vanilla": {
+      "types": "./dist/vanilla.d.ts",
+      "default": "./dist/vanilla.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./dist/opentagcloud.vanilla.js": "./dist/opentagcloud.vanilla.js"
   },
   "files": [
     "dist"
   ],
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "./dist/umd.js",
+    "./dist/opentagcloud.vanilla.js"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/emit-css.mjs",
+    "build": "tsc -p tsconfig.json && node scripts/emit-css.mjs && esbuild src/umd.ts --bundle --format=iife --global-name=openTagCloud --outfile=dist/opentagcloud.vanilla.js --banner:js=\"/* openTagCloud — script-tag build. window.openTagCloud.{mount,defineElement,renderTagCloud,...}; registers <otc-tag-cloud> automatically. Generated from src/umd.ts. */\"",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
+  "unpkg": "dist/opentagcloud.vanilla.js",
+  "jsdelivr": "dist/opentagcloud.vanilla.js",
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"

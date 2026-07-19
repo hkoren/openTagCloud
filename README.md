@@ -65,6 +65,34 @@ const cloud = renderTagCloud(document.querySelector('#cloud'), [
 // later: cloud.update(newItems); cloud.destroy();
 ```
 
+### No build step at all (script tag / custom element)
+
+A script-tag build ships the same engine as a global — it also registers a
+light-DOM `<otc-tag-cloud>` custom element, so a tag cloud is literally one
+tag (handy for CMS embeds and server-rendered apps):
+
+```html
+<script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
+
+<otc-tag-cloud
+  style="height: 320px"
+  min-px="14"
+  max-px="44"
+  items='[
+    { "label": "JavaScript", "weight": 95, "href": "/tags/javascript" },
+    { "label": "Rust", "weight": 60, "color": "#c0392b" }
+  ]'
+></otc-tag-cloud>
+```
+
+Pass items as a JSON `items` attribute, or assign the `items` **property** from
+JS (`el.items = [...]` re-renders in place). The global also exposes
+`openTagCloud.mount(container, items, options)` →
+`{ el, update(items), repack(), destroy() }`, and the same API is importable as
+`opentagcloud/vanilla` (or from `@opentagcloud/core`, where it lives). ES-module
+consumers register the element explicitly with `defineElement()`. A runnable
+page is in [`packages/core/examples/vanilla.html`](packages/core/examples/vanilla.html).
+
 ### Svelte 5
 
 ```svelte
