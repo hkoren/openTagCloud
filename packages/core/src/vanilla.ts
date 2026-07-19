@@ -4,13 +4,10 @@
  * wrappers over the core renderer so the layout engine exists exactly once.
  */
 import type { Fill, TagCloudItem } from './types.js';
+import type { PrepareOptions } from './prepare.js';
 import { renderTagCloud } from './render.js';
 
-export interface MountOptions {
-  /** Font size (px) of the lightest tag. Default 12. */
-  minPx?: number;
-  /** Font size (px) of the heaviest tag. Default 40. */
-  maxPx?: number;
+export interface MountOptions extends PrepareOptions {
   /** Spread terms to fill a taller container. */
   fill?: Fill;
 }
@@ -77,7 +74,14 @@ export function defineElement(tagName?: string): void {
 
   class OtcTagCloudElement extends HTMLElement {
     static get observedAttributes(): string[] {
-      return ['items', 'min-px', 'max-px', 'fill'];
+      return [
+        'items',
+        'min-px',
+        'max-px',
+        'min-opacity',
+        'fill',
+        'weight-labels',
+      ];
     }
 
     private _handle: CloudHandle | null = null;
@@ -135,6 +139,9 @@ export function defineElement(tagName?: string): void {
       this._handle = mount(this, this.items, {
         minPx: num('min-px'),
         maxPx: num('max-px'),
+        minOpacity: num('min-opacity'),
+        // boolean attribute: announce "<label>, weight <weight>" to screen readers
+        ariaLabel: this.hasAttribute('weight-labels') || undefined,
         fill: (this.getAttribute('fill') || undefined) as Fill | undefined,
       });
     }

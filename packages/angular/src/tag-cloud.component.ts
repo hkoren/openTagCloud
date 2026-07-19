@@ -14,6 +14,7 @@ import {
   TagCloudLayout,
   type Fill,
   type PreparedTag,
+  type PrepareOptions,
   type TagCloudItem,
 } from '@opentagcloud/core';
 
@@ -39,26 +40,42 @@ import {
           [class]="p.className"
           [attr.href]="p.item.href"
           [attr.title]="p.title"
+          [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
           [attr.data-weight]="p.weight"
           [attr.data-key]="p.key"
           [style.font-size.px]="p.fontPx"
           [style.opacity]="p.opacity"
           [style.--otc-tag-color]="p.item.color ?? null"
-          >{{ p.text }}</a
         >
+          @for (part of p.parts; track $index) {
+            @if (part.nowrap) {
+              <span class="otc-nb">{{ part.text }}</span>
+            } @else {
+              <ng-container>{{ part.text }}</ng-container>
+            }
+          }
+        </a>
       } @else {
         <span
           [class]="p.className"
           [attr.title]="p.title"
+          [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
           [attr.data-weight]="p.weight"
           [attr.data-key]="p.key"
           [style.font-size.px]="p.fontPx"
           [style.opacity]="p.opacity"
           [style.--otc-tag-color]="p.item.color ?? null"
-          >{{ p.text }}</span
         >
+          @for (part of p.parts; track $index) {
+            @if (part.nowrap) {
+              <span class="otc-nb">{{ part.text }}</span>
+            } @else {
+              <ng-container>{{ part.text }}</ng-container>
+            }
+          }
+        </span>
       }
     }
   `,
@@ -74,6 +91,10 @@ export class TagCloudComponent
   @Input() maxPx = 40;
   /** `'height'`/`'both'` also spreads terms to fill the container's height. */
   @Input() fill?: Fill;
+  /** Opacity of the lightest tag (raise for WCAG contrast; 1 disables the fade). */
+  @Input() minOpacity = 0.62;
+  /** Accessible name per tag: true → "<label>, weight <weight>", or a custom fn. */
+  @Input() ariaLabel?: PrepareOptions['ariaLabel'];
 
   protected prepared: PreparedTag[] = [];
   private layout?: TagCloudLayout;
@@ -82,10 +103,18 @@ export class TagCloudComponent
   constructor(private readonly host: ElementRef<HTMLElement>) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['items'] || changes['minPx'] || changes['maxPx']) {
+    if (
+      changes['items'] ||
+      changes['minPx'] ||
+      changes['maxPx'] ||
+      changes['minOpacity'] ||
+      changes['ariaLabel']
+    ) {
       this.prepared = prepareTags(this.items, {
         minPx: this.minPx,
         maxPx: this.maxPx,
+        minOpacity: this.minOpacity,
+        ariaLabel: this.ariaLabel,
       });
       // Re-pack once the view reflects the new tags (attach() packs the initial set).
       this.needsRefresh = !!this.layout;

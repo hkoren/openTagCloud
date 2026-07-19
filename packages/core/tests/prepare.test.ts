@@ -77,10 +77,43 @@ describe('prepareTags', () => {
     expect(p.key).toBe('x');
   });
 
-  it('renders hyphens as non-breaking hyphens in the display text', () => {
-    const [p] = prepareTags([item('tag-cloud', 1)]);
-    expect(p.text).toBe('tag‑cloud');
-    expect(p.item.label).toBe('tag-cloud'); // original untouched
+  it('keeps the label text byte-identical and marks hyphenated words nowrap (#2)', () => {
+    const [p] = prepareTags([item('anti-aliased edge SFR-plus', 1)]);
+    // no character substitution anywhere — copy/paste and find-in-page work
+    expect(p.text).toBe('anti-aliased edge SFR-plus');
+    expect(p.parts.map((x) => x.text).join('')).toBe(
+      'anti-aliased edge SFR-plus',
+    );
+    // hyphenated words are nowrap; the plain middle (incl. its spaces) is one part
+    expect(p.parts).toEqual([
+      { text: 'anti-aliased', nowrap: true },
+      { text: ' edge ', nowrap: false },
+      { text: 'SFR-plus', nowrap: true },
+    ]);
+    // labels without hyphens stay a single plain part
+    const [q] = prepareTags([item('two words', 1)]);
+    expect(q.parts).toEqual([{ text: 'two words', nowrap: false }]);
+  });
+
+  it('supports a configurable opacity floor via minOpacity (#4)', () => {
+    const [light, heavy] = prepareTags([item('a', 1), item('b', 100)], {
+      minOpacity: 0.8,
+    });
+    expect(light.opacity).toBeGreaterThanOrEqual(0.8);
+    expect(heavy.opacity).toBe(1);
+    const [flat] = prepareTags([item('a', 1)], { minOpacity: 1 });
+    expect(flat.opacity).toBe(1);
+  });
+
+  it('emits ariaLabel only when enabled, with custom formatting support (#4)', () => {
+    const [plain] = prepareTags([item('Rust', 60)]);
+    expect(plain.ariaLabel).toBeUndefined();
+    const [auto] = prepareTags([item('Rust', 60)], { ariaLabel: true });
+    expect(auto.ariaLabel).toBe('Rust, weight 60');
+    const [custom] = prepareTags([item('Rust', 60)], {
+      ariaLabel: (t) => `${t.label} (${t.weight} uses)`,
+    });
+    expect(custom.ariaLabel).toBe('Rust (60 uses)');
   });
 
   it('joins the base class with item.class', () => {

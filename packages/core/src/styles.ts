@@ -21,9 +21,18 @@ export const TAG_CLOUD_CSS = `.otc-cloud {
   word-break: normal;
   hyphens: none;
   text-decoration: none;
-  transition:
-    color var(--otc-transition, 150ms ease),
-    opacity var(--otc-transition, 150ms ease);
+}
+/* Hyphenated words are wrapped in .otc-nb so lines never break at a hyphen
+   (the DOM text itself stays untouched — see prepareTags' label parts). */
+.otc-tag .otc-nb {
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .otc-tag {
+    transition:
+      color var(--otc-transition, 150ms ease),
+      opacity var(--otc-transition, 150ms ease);
+  }
 }
 a.otc-tag:hover,
 a.otc-tag:focus-visible {

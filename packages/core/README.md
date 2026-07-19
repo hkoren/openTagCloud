@@ -55,8 +55,10 @@ markup contract. A runnable page is in
   tag's font size, opacity, key, display text, and inline style. Call it in
   your template layer (works during SSR).
 - Render one element per prepared tag with its `className`, `style`, `title`,
-  text, and `data-fs` / `data-weight` / `data-key` attributes, inside a
-  container with class `otc-cloud`.
+  and `data-fs` / `data-weight` / `data-key` attributes, inside a container
+  with class `otc-cloud`. Render its `parts` as the content — `nowrap` parts go
+  in a `<span class="otc-nb">` so lines never break at a hyphen while the DOM
+  text stays byte-identical to the label.
 - `new TagCloudLayout(container, { fill }).attach()` on mount; `refresh()`
   after the tags change; `destroy()` on teardown. All methods are no-ops
   without a DOM.

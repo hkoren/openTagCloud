@@ -1,7 +1,7 @@
 {
   "name": "opentagcloud-monorepo",
   "private": true,
-  "description": "openTagCloud monorepo — framework-agnostic core plus Svelte, React, Vue, Angular, SolidJS, and Next.js adapters.",
+  "description": "openTagCloud monorepo \u2014 framework-agnostic core plus Svelte, React, Vue, Angular, SolidJS, and Next.js adapters.",
   "license": "MIT",
   "author": "Henry Koren",
   "type": "module",
@@ -12,7 +12,7 @@
     "build": "npm run build -w @opentagcloud/core && npm run build -w opentagcloud -w @opentagcloud/react -w @opentagcloud/vue -w @opentagcloud/solid -w @opentagcloud/next && npm run build -w @opentagcloud/angular",
     "dev": "npm run dev -w opentagcloud",
     "check": "npm run check -w opentagcloud",
-    "test": "npm run test -w @opentagcloud/core -w @opentagcloud/react -w @opentagcloud/vue",
+    "test": "npm run test -w @opentagcloud/core -w opentagcloud -w @opentagcloud/react -w @opentagcloud/vue -w @opentagcloud/solid -w @opentagcloud/angular",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
     "lint": "prettier --check ."

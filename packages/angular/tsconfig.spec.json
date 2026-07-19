@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc-spec",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "types": ["jest"]
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
