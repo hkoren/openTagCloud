@@ -10,7 +10,10 @@
     "tagcloud",
     "wordcloud",
     "word-cloud",
-    "component"
+    "component",
+    "vanilla",
+    "no-build",
+    "umd"
   ],
   "license": "MIT",
   "author": "Henry Koren",
@@ -29,7 +32,13 @@
     ".": {
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js"
-    }
+    },
+    "./vanilla": {
+      "types": "./dist/vanilla.d.ts",
+      "import": "./dist/vanilla.js",
+      "default": "./dist/vanilla.js"
+    },
+    "./dist/opentagcloud.vanilla.js": "./dist/opentagcloud.vanilla.js"
   },
   "files": [
     "dist",
@@ -64,5 +73,7 @@
     "svelte-check": "^4.1.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"
-  }
+  },
+  "unpkg": "dist/opentagcloud.vanilla.js",
+  "jsdelivr": "dist/opentagcloud.vanilla.js"
 }

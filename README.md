@@ -52,6 +52,43 @@ Svelte 5 is a peer dependency.
 </div>
 ```
 
+## Vanilla / no-build (any framework)
+
+Not using Svelte? A framework-agnostic build ships the same layout engine as a
+plain script — no bundler, no Svelte required. Load it and call `mount`:
+
+```html
+<div id="cloud" style="height: 320px"></div>
+
+<script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
+<script>
+  const items = [
+    { label: 'JavaScript', weight: 95, href: '/tags/javascript' },
+    { label: 'TypeScript', weight: 88 },
+    { label: 'Rust', weight: 60, color: '#c0392b' }
+  ];
+  const cloud = openTagCloud.mount(document.getElementById('cloud'), items, {
+    minPx: 14,
+    maxPx: 44
+  });
+  // cloud.update(newItems);  // re-render with new tags
+  // cloud.destroy();         // remove observers + DOM
+</script>
+```
+
+Or as an ES module (bundlers, `<script type="module">`, Deno):
+
+```js
+import { mount } from 'opentagcloud/vanilla';
+const cloud = mount(el, items, { minPx: 14, maxPx: 44 });
+```
+
+`mount(container, items, options?)` returns `{ el, update(items), repack(), destroy() }`.
+`items` use the same `TagCloudItem` shape as the Svelte component, and `options`
+accepts `minPx`, `maxPx`, and `fill`. Styling uses the same CSS custom properties
+(`--otc-color`, `--otc-hover-color`, per-tag `color`); the base rules are injected
+once into `<head>`. A runnable page is in [`examples/vanilla.html`](examples/vanilla.html).
+
 ## Props
 
 | Prop    | Type                            | Default | Description                                                                 |
