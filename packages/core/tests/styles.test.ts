@@ -12,4 +12,9 @@ describe('injectStyles', () => {
     injectStyles();
     expect(document.querySelectorAll('#opentagcloud-css')).toHaveLength(1);
   });
+
+  it('includes the no-wrap rule (#2) and reduced-motion guard (#4)', () => {
+    expect(TAG_CLOUD_CSS).toContain('.otc-tag .otc-nb');
+    expect(TAG_CLOUD_CSS).toContain('prefers-reduced-motion: no-preference');
+  });
 });

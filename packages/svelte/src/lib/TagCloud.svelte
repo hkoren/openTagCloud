@@ -5,6 +5,7 @@
     TagCloudLayout,
     type Fill,
     type TagCloudItem,
+    type PrepareOptions,
   } from '@opentagcloud/core';
   import '@opentagcloud/core/styles.css';
 
@@ -12,6 +13,8 @@
     items,
     minPx = 12,
     maxPx = 40,
+    minOpacity = 0.62,
+    ariaLabel,
     fill,
   }: {
     /** The tags to lay out. */
@@ -26,9 +29,15 @@
      * only term positions change, never the container height.
      */
     fill?: Fill;
+    /** Opacity of the lightest tag (raise for WCAG contrast; 1 disables the fade). */
+    minOpacity?: number;
+    /** Accessible name per tag: true → "<label>, weight <weight>", or a custom fn. */
+    ariaLabel?: PrepareOptions['ariaLabel'];
   } = $props();
 
-  const prepared = $derived(prepareTags(items, { minPx, maxPx }));
+  const prepared = $derived(
+    prepareTags(items, { minPx, maxPx, minOpacity, ariaLabel }),
+  );
 
   let root: HTMLElement;
   let layout: TagCloudLayout | undefined;
@@ -61,19 +70,27 @@
         class={p.className}
         href={p.item.href}
         title={p.title}
+        aria-label={p.ariaLabel}
         style={p.style}
         data-fs={p.fontPx}
         data-weight={p.weight}
-        data-key={p.key}>{p.text}</a
+        data-key={p.key}
+        >{#each p.parts as part}{#if part.nowrap}<span class="otc-nb"
+              >{part.text}</span
+            >{:else}{part.text}{/if}{/each}</a
       >
     {:else}
       <span
         class={p.className}
         title={p.title}
+        aria-label={p.ariaLabel}
         style={p.style}
         data-fs={p.fontPx}
         data-weight={p.weight}
-        data-key={p.key}>{p.text}</span
+        data-key={p.key}
+        >{#each p.parts as part}{#if part.nowrap}<span class="otc-nb"
+              >{part.text}</span
+            >{:else}{part.text}{/if}{/each}</span
       >
     {/if}
   {/each}

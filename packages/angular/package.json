@@ -1,7 +1,7 @@
 {
   "name": "@opentagcloud/angular",
   "version": "0.3.0",
-  "description": "Angular adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
+  "description": "Angular adapter for openTagCloud \u2014 a dependency-free, self-packing, SSR-friendly tag cloud.",
   "keywords": [
     "angular",
     "tag-cloud",
@@ -23,6 +23,7 @@
   },
   "scripts": {
     "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+    "test": "jest",
     "prepublishOnly": "echo 'Publish the built package: npm run build && npm publish dist' && exit 1"
   },
   "dependencies": {
@@ -37,6 +38,12 @@
     "@angular/compiler": "^19.2.0",
     "@angular/compiler-cli": "^19.2.0",
     "@angular/core": "^19.2.0",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-preset-angular": "^14.5.0",
     "ng-packagr": "^19.2.0",
     "rxjs": "^7.8.1",
     "typescript": "~5.7.2",

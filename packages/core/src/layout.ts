@@ -61,13 +61,21 @@ export class TagCloudLayout {
     if (typeof window === 'undefined' || this.#destroyed) return;
     if (this.#injectStyles) injectStyles(this.#root.ownerDocument);
     this.pack();
+    // Coalesce resize bursts (interactive window drags fire many observations
+    // per frame) into at most one layout pass per animation frame.
+    let raf = 0;
     const onResize = () => {
-      // Re-pack only on a real WIDTH change. A height change (our own minHeight,
-      // or a taller grid-row sibling) just re-distributes — which moves terms but
-      // never changes the container height, so it can't feed back into a loop.
-      if (Math.abs(this.#root.clientWidth - this.#lastW) > 1) this.pack();
-      else if (Math.abs(this.#root.clientHeight - this.#lastH) > 1)
-        this.distribute();
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (this.#destroyed) return;
+        // Re-pack only on a real WIDTH change. A height change (our own minHeight,
+        // or a taller grid-row sibling) just re-distributes — which moves terms but
+        // never changes the container height, so it can't feed back into a loop.
+        if (Math.abs(this.#root.clientWidth - this.#lastW) > 1) this.pack();
+        else if (Math.abs(this.#root.clientHeight - this.#lastH) > 1)
+          this.distribute();
+      });
     };
     this.#onResize = onResize;
     this.#ro = new ResizeObserver(onResize);
@@ -181,6 +189,10 @@ export class TagCloudLayout {
 
     // order cells farthest-point-first from the box centre, so the heaviest
     // term lands centrally and the next-heaviest spread out to fill/corners.
+    // Incremental farthest-point selection: each remaining cell tracks its min
+    // distance to the ordered set, updated only against the newly added point —
+    // O(n²) total (a naive rescan is O(n³) and janks at a few hundred tags)
+    // while selecting the exact same sequence.
     const cx0 = W / 2;
     const cy0 = boxH / 2;
     const remaining = cells.slice();
@@ -190,33 +202,68 @@ export class TagCloudLayout {
         Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0),
     );
     ordered.push(remaining.shift()!);
+    const minDist = remaining.map((c) =>
+      Math.hypot(c.x - ordered[0].x, c.y - ordered[0].y),
+    );
     while (remaining.length) {
       let bi = 0;
       let bd = -1;
       for (let i = 0; i < remaining.length; i++) {
-        let md = Infinity;
-        for (const o of ordered)
-          md = Math.min(
-            md,
-            Math.hypot(remaining[i].x - o.x, remaining[i].y - o.y),
-          );
-        if (md > bd) {
-          bd = md;
+        if (minDist[i] > bd) {
+          bd = minDist[i];
           bi = i;
         }
       }
-      ordered.push(remaining.splice(bi, 1)[0]);
+      const next = remaining.splice(bi, 1)[0];
+      minDist.splice(bi, 1);
+      ordered.push(next);
+      for (let i = 0; i < remaining.length; i++) {
+        const d = Math.hypot(remaining[i].x - next.x, remaining[i].y - next.y);
+        if (d < minDist[i]) minDist[i] = d;
+      }
     }
 
-    const placed: { x: number; y: number; w: number; h: number }[] = [];
-    const hits = (x: number, y: number, w: number, h: number) =>
-      placed.some(
-        (r) =>
-          x < r.x + r.w + PAD &&
-          x + w + PAD > r.x &&
-          y < r.y + r.h + PAD &&
-          y + h + PAD > r.y,
-      );
+    // Collision testing via a spatial hash: placed rects are bucketed into a
+    // coarse grid so each spiral probe checks only nearby rects instead of
+    // every placed rect (the naive scan is O(n² × probes) and janks at a few
+    // hundred tags). Same PAD-padded overlap semantics — placement unchanged.
+    const BUCKET = 64;
+    type Rect = { x: number; y: number; w: number; h: number };
+    const buckets = new Map<number, Rect[]>();
+    const bucketKey = (bx: number, by: number) => by * 8192 + bx;
+    const bucketRange = (x: number, y: number, w: number, h: number) => [
+      Math.max(0, Math.floor((x - PAD) / BUCKET)),
+      Math.max(0, Math.floor((x + w + PAD) / BUCKET)),
+      Math.max(0, Math.floor((y - PAD) / BUCKET)),
+      Math.max(0, Math.floor((y + h + PAD) / BUCKET)),
+    ];
+    const insert = (r: Rect) => {
+      const [x0, x1, y0, y1] = bucketRange(r.x, r.y, r.w, r.h);
+      for (let by = y0; by <= y1; by++)
+        for (let bx = x0; bx <= x1; bx++) {
+          const k = bucketKey(bx, by);
+          let list = buckets.get(k);
+          if (!list) buckets.set(k, (list = []));
+          list.push(r);
+        }
+    };
+    const hits = (x: number, y: number, w: number, h: number) => {
+      const [x0, x1, y0, y1] = bucketRange(x, y, w, h);
+      for (let by = y0; by <= y1; by++)
+        for (let bx = x0; bx <= x1; bx++) {
+          const list = buckets.get(bucketKey(bx, by));
+          if (!list) continue;
+          for (const r of list)
+            if (
+              x < r.x + r.w + PAD &&
+              x + w + PAD > r.x &&
+              y < r.y + r.h + PAD &&
+              y + h + PAD > r.y
+            )
+              return true;
+        }
+      return false;
+    };
 
     const pos = new Array<{ x: number; y: number }>(n);
     let maxY = 0;
@@ -240,7 +287,7 @@ export class TagCloudLayout {
         radius += Math.max(3, Math.min(cellW, cellH) * 0.12);
         if (++steps > 4000) break;
       }
-      placed.push({ x, y, w, h });
+      insert({ x, y, w, h });
       pos[idx] = { x, y };
       maxY = Math.max(maxY, y + h);
     });

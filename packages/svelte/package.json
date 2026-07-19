@@ -54,6 +54,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "svelte-kit sync && svelte-package && node scripts/copy-vanilla-umd.mjs && publint",
+    "test": "vitest run",
     "preview": "vite preview",
     "package": "npm run build",
     "prepublishOnly": "npm run build",
@@ -70,10 +71,13 @@
     "@sveltejs/kit": "^2.15.1",
     "@sveltejs/package": "^2.3.7",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/svelte": "^5.2.4",
+    "jsdom": "^26.0.0",
     "publint": "^0.2.12",
     "svelte": "^5.16.0",
     "svelte-check": "^4.1.1",
     "typescript": "^5.7.2",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vitest": "^3.0.0"
   }
 }

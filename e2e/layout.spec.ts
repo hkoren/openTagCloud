@@ -25,12 +25,14 @@ function overlapping(a: Box, b: Box): boolean {
 }
 
 function assertNoOverlaps(boxes: Box[]) {
+  // plain-JS scan first, single expect after — per-pair expect() calls cost
+  // minutes at 400 tags (~80k pairs)
+  const bad: string[] = [];
   for (let i = 0; i < boxes.length; i++)
     for (let j = i + 1; j < boxes.length; j++)
-      expect(
-        overlapping(boxes[i], boxes[j]),
-        `${boxes[i].key} overlaps ${boxes[j].key}`,
-      ).toBe(false);
+      if (overlapping(boxes[i], boxes[j]))
+        bad.push(`${boxes[i].key}×${boxes[j].key}`);
+  expect(bad, `overlapping pairs: ${bad.slice(0, 5).join(', ')}`).toEqual([]);
 }
 
 test('packs all tags absolutely positioned with no overlaps', async ({
@@ -105,4 +107,22 @@ test('update() re-packs the new item set', async ({ page }) => {
   const boxes = await getBoxes(page);
   expect(boxes).toHaveLength(2);
   for (const b of boxes) expect(b.position).toBe('absolute');
+});
+
+test('packs 400 tags with no overlaps, fast enough for interactive resize (#3)', async ({
+  page,
+}) => {
+  await page.goto('/?n=400');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const boxes = await getBoxes(page);
+  expect(boxes).toHaveLength(400);
+  assertNoOverlaps(boxes);
+  // re-pack in isolation: this is the hot path during window drags
+  const ms = await page.evaluate(() => {
+    const start = performance.now();
+    (window as any).cloud.repack();
+    return performance.now() - start;
+  });
+  console.log(`400-tag repack: ${ms.toFixed(0)}ms`);
+  expect(ms).toBeLessThan(2000); // regression guard; ~tens of ms after the spatial-hash fix
 });

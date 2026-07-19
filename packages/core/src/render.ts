@@ -39,10 +39,22 @@ export function createTagElement(
   if (p.item.href) (el as HTMLAnchorElement).href = p.item.href;
   el.setAttribute('style', p.style);
   el.title = p.title;
+  if (p.ariaLabel) el.setAttribute('aria-label', p.ariaLabel);
   el.dataset.fs = String(p.fontPx);
   el.dataset.weight = String(p.weight);
   el.dataset.key = p.key;
-  el.textContent = p.text;
+  // Hyphenated words go inside .otc-nb (white-space: nowrap) so lines never
+  // break at a hyphen; the DOM text stays byte-identical to the label.
+  for (const part of p.parts) {
+    if (part.nowrap) {
+      const nb = doc.createElement('span');
+      nb.className = 'otc-nb';
+      nb.textContent = part.text;
+      el.appendChild(nb);
+    } else {
+      el.appendChild(doc.createTextNode(part.text));
+    }
+  }
   return el;
 }
 

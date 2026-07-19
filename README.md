@@ -164,24 +164,26 @@ vite-plugin-solid like your own code.)
 
 ## Props (identical across adapters)
 
-| Prop    | Type                            | Default | Description                                                                 |
-| ------- | ------------------------------- | ------- | --------------------------------------------------------------------------- |
-| `items` | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                          |
-| `minPx` | `number`                        | `12`    | Font size (px) of the lightest tag.                                         |
-| `maxPx` | `number`                        | `40`    | Font size (px) of the heaviest tag.                                         |
-| `fill`  | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling). |
+| Prop         | Type                            | Default | Description                                                                                                                                 |
+| ------------ | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`      | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                                                                                          |
+| `minPx`      | `number`                        | `12`    | Font size (px) of the lightest tag.                                                                                                         |
+| `maxPx`      | `number`                        | `40`    | Font size (px) of the heaviest tag.                                                                                                         |
+| `fill`       | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                 |
+| `minOpacity` | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.    |
+| `ariaLabel`  | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n. |
 
 ### `TagCloudItem`
 
-| Field    | Type      | Description                                                                                     |
-| -------- | --------- | ----------------------------------------------------------------------------------------------- |
-| `label`  | `string`  | Text to display. Hyphens render as non-breaking hyphens so tags don't wrap on them.             |
-| `weight` | `number`  | Relative importance — drives font size. Any positive number.                                    |
-| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.                     |
-| `id`     | `string?` | Stable identity for the scatter seed + keyed rendering. Defaults to `label`.                    |
-| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                              |
-| `color`  | `string?` | Text color for this tag (any CSS color, incl. `var(--…)`). See [Per-tag color](#per-tag-color). |
-| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                                 |
+| Field    | Type      | Description                                                                                                                                                             |
+| -------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`  | `string`  | Text to display. Tags never line-break at hyphens — enforced with no-wrap markup, so the text itself stays untouched (copy/paste and find-in-page see the real string). |
+| `weight` | `number`  | Relative importance — drives font size. Any positive number.                                                                                                            |
+| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.                                                                                             |
+| `id`     | `string?` | Stable identity for the scatter seed + keyed rendering. Defaults to `label`.                                                                                            |
+| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                                                                                                      |
+| `color`  | `string?` | Text color for this tag (any CSS color, incl. `var(--…)`). See [Per-tag color](#per-tag-color).                                                                         |
+| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                                                                                                         |
 
 ## Sizing
 
@@ -223,6 +225,17 @@ global rule against the tag class:
   font-style: italic;
 }
 ```
+
+## Accessibility
+
+- Set `ariaLabel` (`true` or a formatting function) so screen readers hear each
+  tag's weight, which sighted users infer from font size.
+- Lighter tags fade to `minOpacity` (default 0.62). Depending on your theme
+  color that can drop below the WCAG AA 4.5:1 contrast ratio — raise
+  `minOpacity` or set it to `1` to disable the fade.
+- Color/opacity transitions respect `prefers-reduced-motion`.
+- Tags are plain links/spans in weight order; consider wrapping the cloud in a
+  labeled `<nav>` when it's the page's main navigation.
 
 ## How it works
 
