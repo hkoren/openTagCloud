@@ -1,0 +1,58 @@
+{
+  "name": "@opentagcloud/react",
+  "version": "0.3.0",
+  "description": "React adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud. Works in Next.js (ships 'use client').",
+  "keywords": [
+    "react",
+    "nextjs",
+    "tag-cloud",
+    "tagcloud",
+    "wordcloud",
+    "word-cloud",
+    "component"
+  ],
+  "license": "MIT",
+  "author": "Henry Koren",
+  "homepage": "https://github.com/hkoren/openTagCloud#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkoren/openTagCloud.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/hkoren/openTagCloud/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@opentagcloud/core": "^0.3.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "jsdom": "^26.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  }
+}

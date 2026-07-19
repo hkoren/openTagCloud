@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>openTagCloud layout fixture</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+      #box {
+        width: 600px;
+        height: 300px;
+        display: flex; /* .otc-cloud stretches to the box via flex: 1 1 auto */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box"><div id="cloud"></div></div>
+    <script type="module">
+      import { renderTagCloud } from '/core/index.js';
+
+      const params = new URLSearchParams(location.search);
+      const n = Number(params.get('n') || 24);
+      const fill = params.get('fill') || undefined;
+
+      const items = Array.from({ length: n }, (_, i) => ({
+        label: `tag${i}`,
+        weight: ((i * 37) % 100) + 1,
+        href: `#t${i}`,
+      }));
+
+      window.cloud = renderTagCloud(document.getElementById('cloud'), items, {
+        fill,
+      });
+      window.boxes = () =>
+        [...document.querySelectorAll('.otc-tag')].map((el) => ({
+          key: el.dataset.key,
+          x: el.offsetLeft,
+          y: el.offsetTop,
+          w: el.offsetWidth,
+          h: el.offsetHeight,
+          position: getComputedStyle(el).position,
+        }));
+      window.setBox = (w, h) => {
+        const box = document.getElementById('box');
+        box.style.width = `${w}px`;
+        box.style.height = `${h}px`;
+      };
+    </script>
+  </body>
+</html>

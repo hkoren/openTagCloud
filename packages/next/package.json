@@ -1,0 +1,53 @@
+{
+  "name": "@opentagcloud/next",
+  "version": "0.3.0",
+  "description": "Next.js entry point for openTagCloud — re-exports the React adapter, which ships 'use client' and SSR-renders the no-JS fallback in the App Router.",
+  "keywords": [
+    "nextjs",
+    "next",
+    "react",
+    "tag-cloud",
+    "tagcloud",
+    "wordcloud",
+    "word-cloud",
+    "component"
+  ],
+  "license": "MIT",
+  "author": "Henry Koren",
+  "homepage": "https://github.com/hkoren/openTagCloud#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkoren/openTagCloud.git",
+    "directory": "packages/next"
+  },
+  "bugs": {
+    "url": "https://github.com/hkoren/openTagCloud/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@opentagcloud/react": "^0.3.0"
+  },
+  "peerDependencies": {
+    "next": ">=13.0.0",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

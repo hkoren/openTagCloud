@@ -1,0 +1,282 @@
+import type { Fill } from './types.js';
+import { injectStyles } from './styles.js';
+import { makeRng } from './rng.js';
+
+export interface TagCloudLayoutOptions {
+  /** Also spread terms vertically to fill the container's height. */
+  fill?: Fill;
+  /**
+   * Add the component stylesheet to the document on `attach()` (default true).
+   * Set false if you serve `@opentagcloud/core/styles.css` yourself.
+   */
+  injectStyles?: boolean;
+}
+
+const PAD = 5; // gap between boxes
+
+// container width → font: shrink on narrow (mobile), grow modestly when wide.
+const widthFactor = (w: number) => Math.min(1.25, Math.max(0.72, w / 460));
+
+/**
+ * The self-packing layout engine. Framework-free: it operates on a container
+ * element whose children carry class `otc-tag` plus three data attributes —
+ * `data-fs` (base font px), `data-weight`, and `data-key` (scatter seed) — all
+ * emitted by `prepareTags()`. How those elements got into the DOM (a framework
+ * template, `renderTagCloud()`, or server-rendered HTML) is irrelevant.
+ *
+ * Lifecycle: construct with the container, call `attach()` once it's in the
+ * document, `refresh()` after the tag elements change, `destroy()` on teardown.
+ * All methods are no-ops without a DOM, so adapters can call them under SSR.
+ */
+export class TagCloudLayout {
+  #root: HTMLElement;
+  #fill?: Fill;
+  #injectStyles: boolean;
+  #lastW = -1;
+  #lastH = -1;
+  // packed base layout (natural top-left of each term) + its natural height;
+  // distribute() spreads these to fill the container without re-packing.
+  #base: { x: number; y: number; h: number }[] = [];
+  #packH = 0;
+  #ro?: ResizeObserver;
+  #onResize?: () => void;
+  #destroyed = false;
+
+  constructor(root: HTMLElement, options: TagCloudLayoutOptions = {}) {
+    this.#root = root;
+    this.#fill = options.fill;
+    this.#injectStyles = options.injectStyles ?? true;
+  }
+
+  get #fillH(): boolean {
+    return this.#fill === 'height' || this.#fill === 'both';
+  }
+
+  #tags(): HTMLElement[] {
+    return Array.from(this.#root.querySelectorAll<HTMLElement>('.otc-tag'));
+  }
+
+  /** Start observing the container and pack the initial layout. */
+  attach(): void {
+    if (typeof window === 'undefined' || this.#destroyed) return;
+    if (this.#injectStyles) injectStyles(this.#root.ownerDocument);
+    this.pack();
+    const onResize = () => {
+      // Re-pack only on a real WIDTH change. A height change (our own minHeight,
+      // or a taller grid-row sibling) just re-distributes — which moves terms but
+      // never changes the container height, so it can't feed back into a loop.
+      if (Math.abs(this.#root.clientWidth - this.#lastW) > 1) this.pack();
+      else if (Math.abs(this.#root.clientHeight - this.#lastH) > 1)
+        this.distribute();
+    };
+    this.#onResize = onResize;
+    this.#ro = new ResizeObserver(onResize);
+    this.#ro.observe(this.#root);
+    window.addEventListener('resize', onResize);
+    document.fonts?.ready?.then(() => {
+      if (!this.#destroyed) this.pack();
+    });
+  }
+
+  /** Re-pack after the tag elements changed (items added/removed/re-weighted). */
+  refresh(): void {
+    if (typeof window === 'undefined' || this.#destroyed) return;
+    this.pack();
+  }
+
+  /** Change the fill mode; only term positions move, never the container height. */
+  setFill(fill: Fill | undefined): void {
+    this.#fill = fill;
+    if (typeof window !== 'undefined' && !this.#destroyed) this.distribute();
+  }
+
+  /** Stop observing. The current positions are left in place. */
+  destroy(): void {
+    this.#destroyed = true;
+    this.#ro?.disconnect();
+    this.#ro = undefined;
+    if (this.#onResize && typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.#onResize);
+    }
+    this.#onResize = undefined;
+  }
+
+  // Lay the cloud out to fill the container, adapting to its size and aspect
+  // ratio. Heaviest terms are seeded at anchor points spread evenly across the
+  // box (farthest-point order, so they never cram together); each term then
+  // spirals out from its anchor only as far as needed to avoid overlaps. A
+  // wide box gets more columns → fewer wrapped lines; corners get seeded so the
+  // cloud fills rather than blobbing in the middle.
+  pack(): void {
+    const root = this.#root;
+    const tags = this.#tags();
+    if (!tags.length) return;
+    const W = root.clientWidth;
+    if (W < 2) return;
+    this.#lastW = W;
+
+    const weights = tags.map((el) => {
+      const w = parseFloat(el.dataset.weight ?? '');
+      return Number.isFinite(w) ? w : 1;
+    });
+    const keys = tags.map((el) => el.dataset.key ?? el.textContent ?? '');
+
+    root.classList.remove('otc-packed');
+    for (const el of tags) {
+      el.style.position = '';
+      el.style.left = '';
+      el.style.top = '';
+    }
+
+    // A wider container can keep multi-word terms on one line (less wrapping);
+    // narrow containers wrap at a sensible width. Long single words that would
+    // still overflow are shrunk to fit below.
+    const wide = W >= 380;
+    const setBase = (scale: number) => {
+      for (const el of tags) {
+        el.style.whiteSpace = wide ? 'nowrap' : 'normal';
+        el.style.maxWidth = wide
+          ? `${Math.round(W * 0.6)}px`
+          : 'min(6.5em, 100%)';
+        el.style.fontSize = `${Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W) * scale).toFixed(1)}px`;
+      }
+    };
+    const measure = () =>
+      tags.map((el) => ({ el, w: el.offsetWidth, h: el.offsetHeight }));
+
+    // Measure the footprint at the width-scaled font. The box HEIGHT is derived
+    // purely from the content area (never from the element's own clientHeight),
+    // so the layout can't feed back into the container size — the root cause of
+    // relayout loops. Width alone (a real external change) drives re-packing.
+    setBase(1);
+    const dims = measure();
+    const area = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
+    const LOOSEN = 1.4;
+    const availH = (area * LOOSEN) / W;
+
+    // shrink any term still wider than the box (unbreakable long word)
+    for (const d of dims) {
+      if (d.w > W) {
+        const cur = parseFloat(d.el.style.fontSize) || 12;
+        d.el.style.fontSize = `${Math.max(9, cur * (W / d.w)).toFixed(1)}px`;
+        d.w = d.el.offsetWidth;
+        d.h = d.el.offsetHeight;
+      }
+    }
+
+    const n = dims.length;
+    const order = dims.map((_, i) => i).sort((a, b) => weights[b] - weights[a]);
+
+    // anchor grid sized to the box aspect ratio: wide box → more columns
+    const boxH = Math.max(availH, 1);
+    const aspect = W / boxH;
+    const cols = Math.max(1, Math.round(Math.sqrt(n * aspect)));
+    const rows = Math.max(1, Math.ceil(n / cols));
+    const cellW = W / cols;
+    const cellH = boxH / rows;
+    const cells: { x: number; y: number }[] = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
+
+    // order cells farthest-point-first from the box centre, so the heaviest
+    // term lands centrally and the next-heaviest spread out to fill/corners.
+    const cx0 = W / 2;
+    const cy0 = boxH / 2;
+    const remaining = cells.slice();
+    const ordered: { x: number; y: number }[] = [];
+    remaining.sort(
+      (a, b) =>
+        Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0),
+    );
+    ordered.push(remaining.shift()!);
+    while (remaining.length) {
+      let bi = 0;
+      let bd = -1;
+      for (let i = 0; i < remaining.length; i++) {
+        let md = Infinity;
+        for (const o of ordered)
+          md = Math.min(
+            md,
+            Math.hypot(remaining[i].x - o.x, remaining[i].y - o.y),
+          );
+        if (md > bd) {
+          bd = md;
+          bi = i;
+        }
+      }
+      ordered.push(remaining.splice(bi, 1)[0]);
+    }
+
+    const placed: { x: number; y: number; w: number; h: number }[] = [];
+    const hits = (x: number, y: number, w: number, h: number) =>
+      placed.some(
+        (r) =>
+          x < r.x + r.w + PAD &&
+          x + w + PAD > r.x &&
+          y < r.y + r.h + PAD &&
+          y + h + PAD > r.y,
+      );
+
+    const pos = new Array<{ x: number; y: number }>(n);
+    let maxY = 0;
+    order.forEach((idx, rank) => {
+      const { w, h } = dims[idx];
+      const a = ordered[rank % ordered.length];
+      const rand = makeRng(keys[idx]);
+      // spiral out from this term's own anchor until it fits with no overlap
+      let angle = rand() * Math.PI * 2;
+      let radius = 0;
+      let x = a.x - w / 2;
+      let y = a.y - h / 2;
+      let steps = 0;
+      while (true) {
+        x = a.x - w / 2 + radius * Math.cos(angle);
+        y = a.y - h / 2 + radius * Math.sin(angle);
+        x = Math.max(0, Math.min(x, W - w)); // stay within width
+        if (y < 0) y = 0;
+        if (!hits(x, y, w, h)) break;
+        angle += 0.5;
+        radius += Math.max(3, Math.min(cellW, cellH) * 0.12);
+        if (++steps > 4000) break;
+      }
+      placed.push({ x, y, w, h });
+      pos[idx] = { x, y };
+      maxY = Math.max(maxY, y + h);
+    });
+
+    for (const el of tags) el.style.position = 'absolute';
+    this.#base = dims.map((d, i) => ({ x: pos[i].x, y: pos[i].y, h: d.h }));
+    this.#packH = Math.ceil(maxY);
+    root.classList.add('otc-packed');
+    root.style.minHeight = `${this.#packH}px`;
+    this.distribute();
+  }
+
+  // Spread the packed terms to fill the container's current height when
+  // fill='height' (so a cloud in a taller grid cell reaches the bottom and
+  // neighbours stay aligned). Terms are position:absolute, so moving them can't
+  // change the container's own height — this is loop-safe by construction, unlike
+  // reading/writing height during pack().
+  distribute(): void {
+    const base = this.#base;
+    if (!base.length) return;
+    const tags = this.#tags();
+    const H = this.#root.clientHeight;
+    this.#lastH = H;
+    let sy = 1;
+    if (this.#fillH && H > this.#packH + 1) {
+      sy = Infinity;
+      for (const b of base) if (b.y > 0.5) sy = Math.min(sy, (H - b.h) / b.y);
+      if (!isFinite(sy) || sy < 1) sy = 1;
+      sy = Math.min(sy, 4); // never spread absurdly far
+    }
+    tags.forEach((el, i) => {
+      const b = base[i];
+      if (!b) return;
+      const top = sy === 1 ? b.y : Math.min(b.y * sy, Math.max(0, H - b.h));
+      el.style.left = `${Math.round(b.x)}px`;
+      el.style.top = `${Math.round(top)}px`;
+    });
+  }
+}
