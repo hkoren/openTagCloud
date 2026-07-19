@@ -24,6 +24,12 @@
     { label: 'Dart', weight: 28, href: '#dart' },
     { label: 'Perl', weight: 12, href: '#perl' },
   ];
+
+  // The `color` feature: give individual tags their own color (any CSS color).
+  const sentiment: TagCloudItem[] = languages.map((t) => ({
+    ...t,
+    color: t.weight >= 65 ? '#16a34a' : t.weight <= 25 ? '#dc2626' : undefined,
+  }));
 </script>
 
 <main>
@@ -41,6 +47,16 @@
   </p>
   <div class="box themed">
     <TagCloud items={languages} minPx={14} maxPx={56} />
+  </div>
+
+  <h2>Per-tag color</h2>
+  <p>
+    Give any tag its own <code>color</code> (any CSS color, incl.
+    <code>var(--…)</code>) to highlight or categorize — here green for the most popular, red for the
+    least.
+  </p>
+  <div class="box">
+    <TagCloud items={sentiment} />
   </div>
 </main>
 

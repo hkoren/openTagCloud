@@ -63,14 +63,15 @@ Svelte 5 is a peer dependency.
 
 ### `TagCloudItem`
 
-| Field    | Type      | Description                                                                         |
-| -------- | --------- | ----------------------------------------------------------------------------------- |
-| `label`  | `string`  | Text to display. Hyphens render as non-breaking hyphens so tags don't wrap on them. |
-| `weight` | `number`  | Relative importance — drives font size. Any positive number.                        |
-| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.         |
-| `id`     | `string?` | Stable identity for the scatter seed + keyed each. Defaults to `label`.             |
-| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                  |
-| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                     |
+| Field    | Type      | Description                                                                                     |
+| -------- | --------- | ----------------------------------------------------------------------------------------------- |
+| `label`  | `string`  | Text to display. Hyphens render as non-breaking hyphens so tags don't wrap on them.             |
+| `weight` | `number`  | Relative importance — drives font size. Any positive number.                                    |
+| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.                     |
+| `id`     | `string?` | Stable identity for the scatter seed + keyed each. Defaults to `label`.                         |
+| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                              |
+| `color`  | `string?` | Text color for this tag (any CSS color, incl. `var(--…)`). See [Per-tag color](#per-tag-color). |
+| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                                 |
 
 ## Sizing
 
@@ -95,21 +96,41 @@ Style it with CSS custom properties (all optional):
 </div>
 ```
 
-For per-tag styling (e.g. to highlight some tags), pass a `class` on the item and
-target it with a global rule:
+Lighter tags render at lower opacity (heavier = more prominent); hovering a link
+brings it to full opacity.
+
+### Per-tag color
+
+Give an individual tag its own color with the `color` field — any CSS color,
+including a custom property. It overrides `--otc-color` for that tag and is used
+as its hover color too, so it keeps its hue on hover. Great for highlighting or
+categorizing tags (status, sentiment, a "danger" flag, …):
 
 ```svelte
-<TagCloud items={[{ label: 'Deprecated', weight: 20, class: 'muted' }]} />
+<script>
+  const items = tags.map((t) => ({
+    label: t.name,
+    weight: t.weight,
+    href: t.href,
+    color: t.risky ? 'var(--danger)' : undefined // themed per tag
+  }));
+</script>
+
+<TagCloud {items} />
+```
+
+For anything beyond color, pass a `class` on the item and target it with a global
+rule:
+
+```svelte
+<TagCloud items={[{ label: 'Legacy', weight: 20, class: 'muted' }]} />
 
 <style>
   :global(.tag.muted) {
-    color: #c0392b;
+    font-style: italic;
   }
 </style>
 ```
-
-Lighter tags render at lower opacity (heavier = more prominent); hovering a link
-brings it to full opacity.
 
 ## How it works
 

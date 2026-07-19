@@ -14,6 +14,12 @@ export interface TagCloudItem {
   id?: string;
   /** Tooltip text. Defaults to the `weight`. */
   title?: string;
+  /**
+   * Text color for this tag — any CSS color (`"#c0392b"`, `"tomato"`,
+   * `"var(--danger)"`). Overrides the `--otc-color` default and is also used as
+   * the tag's hover color. Use it to highlight or categorize individual tags.
+   */
+  color?: string;
   /** Extra class(es) applied to the tag element, for custom per-tag styling. */
   class?: string;
 }

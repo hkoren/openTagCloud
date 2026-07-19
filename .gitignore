@@ -1,5 +1,5 @@
 node_modules
-/dist
+# dist/ is committed so `npm install github:hkoren/openTagCloud` works without a build step
 /build
 /.svelte-kit
 /package
