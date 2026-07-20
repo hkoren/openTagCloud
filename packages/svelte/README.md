@@ -1,9 +1,14 @@
 # opentagcloud
 
-A dependency-free, self-packing, SSR-friendly **tag cloud** component for
-**Svelte 5** — the Svelte adapter of
-[openTagCloud](https://github.com/hkoren/openTagCloud). (Adapters for React,
-Vue, Angular, SolidJS, Next.js, and vanilla JS live in the same repo.)
+A dependency-free, self-packing, SSR-friendly **tag cloud** — for **any
+framework, or none**. This package bundles the **Svelte 5** component, a
+**vanilla-JS** entry point (`opentagcloud/vanilla`: `mount()` and the
+`<otc-tag-cloud>` custom element — one script tag, no build step), and
+re-exports of the framework-agnostic engine. Dedicated **React, Vue, Angular,
+SolidJS, and Next.js** adapters ship as
+[`@opentagcloud/*`](https://github.com/hkoren/openTagCloud#packages).
+
+**[Live examples →](https://hkoren.github.io/openTagCloud/)**
 
 Terms are laid out by a lightweight packer that seeds the heaviest tags across
 the container and spirals the rest out from their anchors until nothing
@@ -17,9 +22,26 @@ hydrated output match and the layout is stable across renders.
 npm install opentagcloud
 ```
 
-Svelte 5 is a peer dependency.
+Svelte 5 is a peer dependency (only if you use the Svelte component — the
+vanilla entry point and custom element need no framework at all).
 
 ## Usage
+
+No build step (any site, any framework):
+
+```html
+<script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
+
+<otc-tag-cloud
+  style="height: 320px"
+  items='[
+    { "label": "JavaScript", "weight": 95, "href": "/tags/javascript" },
+    { "label": "Rust", "weight": 60 }
+  ]'
+></otc-tag-cloud>
+```
+
+Svelte 5:
 
 ```svelte
 <script lang="ts">
