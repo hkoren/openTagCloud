@@ -1,7 +1,7 @@
 {
   "name": "@opentagcloud/solid",
-  "version": "0.3.0",
-  "description": "SolidJS adapter for openTagCloud \u2014 a dependency-free, self-packing, SSR-friendly tag cloud.",
+  "version": "0.4.0",
+  "description": "SolidJS adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
   "keywords": [
     "solid",
     "solidjs",
@@ -44,7 +44,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@opentagcloud/core": "^0.3.0"
+    "@opentagcloud/core": "^0.4.0"
   },
   "peerDependencies": {
     "solid-js": "^1.8.0"
