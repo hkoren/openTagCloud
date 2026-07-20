@@ -1171,7 +1171,8 @@ function Nt(t, e) {
     Qe());
 }
 var Sa =
-  yt(`<main class="svelte-1uha8ag"><h1 class="svelte-1uha8ag">openTagCloud</h1> <p class="svelte-1uha8ag">A dependency-free, self-packing tag cloud component for Svelte 5.</p> <div class="box svelte-1uha8ag"><!></div> <h2>Custom sizes &amp; theming</h2> <p class="svelte-1uha8ag">Font range via <code class="svelte-1uha8ag">minPx</code>/<code class="svelte-1uha8ag">maxPx</code>; colors via the <code class="svelte-1uha8ag">--otc-color</code> and <code class="svelte-1uha8ag">--otc-hover-color</code> custom properties.</p> <div class="box themed svelte-1uha8ag"><!></div> <h2>Per-tag color</h2> <p class="svelte-1uha8ag">Give any tag its own <code class="svelte-1uha8ag">color</code> (any CSS color, incl. <code class="svelte-1uha8ag">var(--…)</code>) to highlight or categorize — here green for the most
+  yt(`<main class="svelte-1uha8ag"><h1 class="svelte-1uha8ag">openTagCloud</h1> <p class="svelte-1uha8ag">A dependency-free, self-packing tag cloud for any framework — shown here via
+    the Svelte 5 component.</p> <div class="box svelte-1uha8ag"><!></div> <h2>Custom sizes &amp; theming</h2> <p class="svelte-1uha8ag">Font range via <code class="svelte-1uha8ag">minPx</code>/<code class="svelte-1uha8ag">maxPx</code>; colors via the <code class="svelte-1uha8ag">--otc-color</code> and <code class="svelte-1uha8ag">--otc-hover-color</code> custom properties.</p> <div class="box themed svelte-1uha8ag"><!></div> <h2>Per-tag color</h2> <p class="svelte-1uha8ag">Give any tag its own <code class="svelte-1uha8ag">color</code> (any CSS color, incl. <code class="svelte-1uha8ag">var(--…)</code>) to highlight or categorize — here green for the most
     popular, red for the least.</p> <div class="box svelte-1uha8ag"><!></div></main>`);
 function Pa(t) {
   const e = [
