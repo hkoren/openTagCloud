@@ -237,3 +237,33 @@ test('long nowrap labels never overflow their measured boxes at fit scale (#16 r
   );
   expect(overflowing).toBe(0);
 });
+
+test('fit mode never shrinks type below the base ramp — crowded boxes overflow legibly (#16 rework)', async ({
+  page,
+}) => {
+  // 80 tags cannot fit a 600x250 box at base size; pre-rework this crammed
+  // them at ~half size. Now every tag keeps >= its base ramp size and the
+  // cloud overflows (minHeight grows past the box) like it did before #16.
+  await page.goto('/?n=80');
+  await page.evaluate(() => (window as any).setBox(600, 250));
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  await page.waitForTimeout(200);
+  const { shrunk, minH } = await page.evaluate(() => {
+    const cloud = document.getElementById('cloud') as HTMLElement;
+    const W = cloud.clientWidth;
+    const widthFactor = Math.min(1.25, Math.max(0.72, W / 460));
+    const tags = [...document.querySelectorAll<HTMLElement>('.otc-tag')];
+    return {
+      shrunk: tags.filter((el) => {
+        const base = Math.max(
+          8,
+          parseFloat(el.dataset.fs || '12') * widthFactor,
+        );
+        return parseFloat(getComputedStyle(el).fontSize) < base - 0.2;
+      }).length,
+      minH: parseFloat(cloud.style.minHeight),
+    };
+  });
+  expect(shrunk).toBe(0); // no tag below its base ramp size
+  expect(minH).toBeGreaterThan(250); // overflowed instead of cramming
+});

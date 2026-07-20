@@ -347,12 +347,15 @@ export class TagCloudLayout {
     const baseArea = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
 
     // Fit mode: project the font scale whose footprint fills the external box,
-    // then verify by packing — a single bounded retry shrinks on overflow.
+    // then verify by packing — bounded retries shrink on overflow. GROW-ONLY:
+    // the scale never drops below 1, so type never gets smaller than the base
+    // ramp — a too-small container overflows (min-height grows past it) at
+    // legible sizes instead of cramming illegibly (#16 rework).
     let scale = 1;
     if (fit && baseArea > 0) {
       scale = Math.min(
         2.5,
-        Math.max(0.6, Math.sqrt((W * externalH) / (baseArea * LOOSEN))),
+        Math.max(1, Math.sqrt((W * externalH) / (baseArea * LOOSEN))),
       );
     }
 
@@ -461,9 +464,15 @@ export class TagCloudLayout {
         maxY = Math.max(maxY, y + h);
       });
 
-      // fits (with 8% grace) or we're out of retries — done
-      if (!fit || attempt === ATTEMPTS - 1 || maxY <= externalH * 1.08) break;
-      scale = Math.max(0.5, scale * (externalH / maxY) * 0.95);
+      // fits (with 8% grace), can't shrink further, or out of retries — done
+      if (
+        !fit ||
+        attempt === ATTEMPTS - 1 ||
+        maxY <= externalH * 1.08 ||
+        scale <= 1
+      )
+        break;
+      scale = Math.max(1, scale * (externalH / maxY) * 0.95);
     }
 
     for (const el of tags) el.style.position = 'absolute';
