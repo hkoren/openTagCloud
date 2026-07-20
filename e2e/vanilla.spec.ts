@@ -39,9 +39,10 @@ test('UMD build exposes the API, mounts, and registers <otc-tag-cloud>', async (
   expect(state.mountAnchor).toBe(true);
   expect(state.elTags).toBe(6);
   expect(state.colored).toBe(true);
-  // fill='height': spread beyond the packed footprint, bounded by the element
-  expect(state.elLowest).toBeGreaterThan(state.elPackedHeight + 20);
-  expect(state.elLowest).toBeLessThanOrEqual(260);
+  // fit mode (#16) packs to the element's height; tags reach near the bottom
+  expect(state.elPackedHeight).toBeGreaterThan(260 * 0.6);
+  expect(state.elLowest).toBeGreaterThan(260 * 0.7);
+  expect(state.elLowest).toBeLessThanOrEqual(260 * 1.15);
 
   // items property update re-renders in place
   const afterUpdate = await page.evaluate(() => {

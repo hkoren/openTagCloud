@@ -32,7 +32,9 @@ function countOverlaps(boxes: Box[]): number {
 test('estimateCloudHeight approximates the real packed height (#5)', async ({
   page,
 }) => {
-  await page.goto('/?n=24');
+  // auto-height container: the estimate exists to reserve space where the
+  // packer uses area-based height (fixed-height boxes need no reservation)
+  await page.goto('/?n=24&auto');
   await page.waitForSelector('.otc-cloud.otc-packed');
   const { actual, estimate } = await page.evaluate(() => {
     const cloud = document.getElementById('cloud') as HTMLElement;
@@ -145,4 +147,76 @@ test('non-incremental refresh reshuffles (control for #7)', async ({
   // full re-pack re-ranks anchors, so most tags move — this guards that the
   // incremental assertion above is actually meaningful
   expect(kept.length).toBeLessThan(before.length * 0.8);
+});
+
+test('fit mode fills an externally sized container with larger type (#16)', async ({
+  page,
+}) => {
+  await page.goto('/?n=24');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const { packH, boxH, avgFont } = await page.evaluate(() => {
+    const cloud = document.getElementById('cloud') as HTMLElement;
+    const fonts = [...document.querySelectorAll<HTMLElement>('.otc-tag')].map(
+      (el) => parseFloat(getComputedStyle(el).fontSize),
+    );
+    return {
+      packH: parseFloat(cloud.style.minHeight),
+      boxH: document.getElementById('box')!.clientHeight,
+      avgFont: fonts.reduce((a, b) => a + b, 0) / fonts.length,
+    };
+  });
+  // the packed cloud fills most of the 300px box without overflowing far
+  expect(packH).toBeGreaterThan(boxH * 0.6);
+  expect(packH).toBeLessThan(boxH * 1.15);
+  // and fonts scaled up beyond the base ramp to do it
+  expect(avgFont).toBeGreaterThan(18);
+  const boxes = await getBoxes(page);
+  expect(countOverlaps(boxes)).toBe(0);
+});
+
+test('auto-height containers keep area-based packing — no feedback loop (#16)', async ({
+  page,
+}) => {
+  await page.goto('/?n=24&auto');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  // stable across settle time: minHeight must not creep (the loop guard)
+  const h1 = await page.evaluate(() =>
+    parseFloat(
+      (document.getElementById('cloud') as HTMLElement).style.minHeight,
+    ),
+  );
+  await page.waitForTimeout(300);
+  const h2 = await page.evaluate(() =>
+    parseFloat(
+      (document.getElementById('cloud') as HTMLElement).style.minHeight,
+    ),
+  );
+  expect(h1).toBeGreaterThan(0);
+  expect(h2).toBe(h1);
+  expect(countOverlaps(await getBoxes(page))).toBe(0);
+});
+
+test('RTL documents mirror the layout via logical positioning (#11)', async ({
+  page,
+}) => {
+  await page.goto('/?n=12');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const ltr = await getBoxes(page);
+  const W = await page.evaluate(
+    () => document.getElementById('cloud')!.clientWidth,
+  );
+
+  await page.goto('/?n=12&dir=rtl');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const rtl = await getBoxes(page);
+  expect(countOverlaps(rtl)).toBe(0);
+
+  const rtlByKey = new Map(rtl.map((b) => [b.key, b]));
+  for (const b of ltr) {
+    const m = rtlByKey.get(b.key)!;
+    expect(m, `missing ${b.key}`).toBeTruthy();
+    // physical x mirrors: x_rtl = W - x_ltr - w (±2px rounding)
+    expect(Math.abs(m.x - (W - b.x - b.w))).toBeLessThanOrEqual(2);
+    expect(Math.abs(m.y - b.y)).toBeLessThanOrEqual(2);
+  }
 });

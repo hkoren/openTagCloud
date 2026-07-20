@@ -40,10 +40,10 @@ describe('mount (vanilla compat)', () => {
     expect(container.childElementCount).toBe(0);
   });
 
-  it("stretches its root for fill='height' so plain block containers work", () => {
+  it('stretches its root to the container so height-fit and fill work in plain block parents', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
-    const handle = mount(container, items, { fill: 'height' });
+    const handle = mount(container, items);
     expect(handle.el.style.height).toBe('100%');
     handle.destroy();
   });

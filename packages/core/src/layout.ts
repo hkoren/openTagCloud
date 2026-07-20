@@ -108,6 +108,9 @@ export class TagCloudLayout {
   // last packed geometry, keyed by data-key — feeds incremental refresh
   #placed = new Map<string, Rect>();
   #packW = -1;
+  // fit-mode font scale of the last pack — incremental refresh must measure
+  // at the same scale or every kept tag would look "changed"
+  #packScale = 1;
   #ro?: ResizeObserver;
   #onResize?: () => void;
   #destroyed = false;
@@ -281,10 +284,26 @@ export class TagCloudLayout {
     });
     const keys = tags.map((el) => el.dataset.key ?? el.textContent ?? '');
 
+    // Probe for an externally imposed height (fixed/flex/grid parents): with
+    // our own minHeight zeroed and every tag out of flow, any height left must
+    // come from outside. Auto-height containers probe as 0, which preserves
+    // the no-feedback-loop invariant — we never fit to a height we caused.
+    const prevMinHeight = root.style.minHeight;
+    const prevPositions = tags.map((el) => el.style.position);
+    root.style.minHeight = '0px';
+    for (const el of tags) el.style.position = 'absolute';
+    const externalH = root.clientHeight;
+    root.style.minHeight = prevMinHeight;
+    tags.forEach((el, i) => (el.style.position = prevPositions[i]));
+    // Fit mode (#16): scale the whole font ramp so the cloud fills the box —
+    // bigger type, less dead space — instead of packing to its natural area.
+    const fit = externalH > 40;
+
     root.classList.remove('otc-packed');
     for (const el of tags) {
       el.style.position = '';
       el.style.left = '';
+      el.style.insetInlineStart = '';
       el.style.top = '';
       el.style.transform = '';
     }
@@ -305,109 +324,138 @@ export class TagCloudLayout {
     const measure = () =>
       tags.map((el) => ({ el, w: el.offsetWidth, h: el.offsetHeight }));
 
-    // Measure the footprint at the width-scaled font. The box HEIGHT is derived
-    // purely from the content area (never from the element's own clientHeight),
-    // so the layout can't feed back into the container size — the root cause of
-    // relayout loops. Width alone (a real external change) drives re-packing.
+    // Measure the footprint at the width-scaled font. Without an external
+    // height, the box HEIGHT is derived purely from the content area (never
+    // from the element's own clientHeight), so the layout can't feed back into
+    // the container size — the root cause of relayout loops. Width alone (a
+    // real external change) drives re-packing.
     setBase(1);
-    const dims = measure();
-    const area = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
-    const availH = (area * LOOSEN) / W;
+    let dims = measure();
+    const baseArea = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
 
-    // shrink any term still wider than the box (unbreakable long word)
-    for (const d of dims) {
-      if (d.w > W) {
-        const cur = parseFloat(d.el.style.fontSize) || 12;
-        d.el.style.fontSize = `${Math.max(9, cur * (W / d.w)).toFixed(1)}px`;
-        d.w = d.el.offsetWidth;
-        d.h = d.el.offsetHeight;
-      }
+    // Fit mode: project the font scale whose footprint fills the external box,
+    // then verify by packing — a single bounded retry shrinks on overflow.
+    let scale = 1;
+    if (fit && baseArea > 0) {
+      scale = Math.min(
+        2.5,
+        Math.max(0.6, Math.sqrt((W * externalH) / (baseArea * LOOSEN))),
+      );
     }
 
     const n = dims.length;
     const order = dims.map((_, i) => i).sort((a, b) => weights[b] - weights[a]);
 
-    // anchor grid sized to the box aspect ratio: wide box → more columns
-    const boxH = Math.max(availH, 1);
-    const aspect = W / boxH;
-    const cols = Math.max(1, Math.round(Math.sqrt(n * aspect)));
-    const rows = Math.max(1, Math.ceil(n / cols));
-    const cellW = W / cols;
-    const cellH = boxH / rows;
-    const cells: { x: number; y: number }[] = [];
-    for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++)
-        cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
+    let pos = new Array<{ x: number; y: number }>(n);
+    let maxY = 0;
 
-    // order cells farthest-point-first from the box centre, so the heaviest
-    // term lands centrally and the next-heaviest spread out to fill/corners.
-    // Incremental farthest-point selection: each remaining cell tracks its min
-    // distance to the ordered set, updated only against the newly added point —
-    // O(n²) total (a naive rescan is O(n³) and janks at a few hundred tags)
-    // while selecting the exact same sequence.
-    const cx0 = W / 2;
-    const cy0 = boxH / 2;
-    const remaining = cells.slice();
-    const ordered: { x: number; y: number }[] = [];
-    remaining.sort(
-      (a, b) =>
-        Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0),
-    );
-    ordered.push(remaining.shift()!);
-    const minDist = remaining.map((c) =>
-      Math.hypot(c.x - ordered[0].x, c.y - ordered[0].y),
-    );
-    while (remaining.length) {
-      let bi = 0;
-      let bd = -1;
-      for (let i = 0; i < remaining.length; i++) {
-        if (minDist[i] > bd) {
-          bd = minDist[i];
-          bi = i;
+    const ATTEMPTS = 3;
+    for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+      if (scale !== 1 || attempt > 0) {
+        setBase(scale);
+        dims = measure();
+      }
+      // shrink any term still wider than the box (unbreakable long word)
+      for (const d of dims) {
+        if (d.w > W) {
+          const cur = parseFloat(d.el.style.fontSize) || 12;
+          d.el.style.fontSize = `${Math.max(9, cur * (W / d.w)).toFixed(1)}px`;
+          d.w = d.el.offsetWidth;
+          d.h = d.el.offsetHeight;
         }
       }
-      const next = remaining.splice(bi, 1)[0];
-      minDist.splice(bi, 1);
-      ordered.push(next);
-      for (let i = 0; i < remaining.length; i++) {
-        const d = Math.hypot(remaining[i].x - next.x, remaining[i].y - next.y);
-        if (d < minDist[i]) minDist[i] = d;
+
+      const area = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
+      // anchor grid sized to the box aspect ratio: wide box → more columns
+      const boxH = Math.max(fit ? externalH : (area * LOOSEN) / W, 1);
+      const aspect = W / boxH;
+      const cols = Math.max(1, Math.round(Math.sqrt(n * aspect)));
+      const rows = Math.max(1, Math.ceil(n / cols));
+      const cellW = W / cols;
+      const cellH = boxH / rows;
+      const cells: { x: number; y: number }[] = [];
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
+
+      // order cells farthest-point-first from the box centre, so the heaviest
+      // term lands centrally and the next-heaviest spread out to fill/corners.
+      // Incremental farthest-point selection: each remaining cell tracks its
+      // min distance to the ordered set, updated only against the newly added
+      // point — O(n²) total (a naive rescan is O(n³) and janks at a few
+      // hundred tags) while selecting the exact same sequence.
+      const cx0 = W / 2;
+      const cy0 = boxH / 2;
+      const remaining = cells.slice();
+      const ordered: { x: number; y: number }[] = [];
+      remaining.sort(
+        (a, b) =>
+          Math.hypot(a.x - cx0, a.y - cy0) - Math.hypot(b.x - cx0, b.y - cy0),
+      );
+      ordered.push(remaining.shift()!);
+      const minDist = remaining.map((c) =>
+        Math.hypot(c.x - ordered[0].x, c.y - ordered[0].y),
+      );
+      while (remaining.length) {
+        let bi = 0;
+        let bd = -1;
+        for (let i = 0; i < remaining.length; i++) {
+          if (minDist[i] > bd) {
+            bd = minDist[i];
+            bi = i;
+          }
+        }
+        const next = remaining.splice(bi, 1)[0];
+        minDist.splice(bi, 1);
+        ordered.push(next);
+        for (let i = 0; i < remaining.length; i++) {
+          const d = Math.hypot(
+            remaining[i].x - next.x,
+            remaining[i].y - next.y,
+          );
+          if (d < minDist[i]) minDist[i] = d;
+        }
       }
+
+      const { insert, hits } = createSpatialHash();
+
+      pos = new Array<{ x: number; y: number }>(n);
+      maxY = 0;
+      order.forEach((idx, rank) => {
+        const { w, h } = dims[idx];
+        const a = ordered[rank % ordered.length];
+        const rand = makeRng(keys[idx]);
+        // spiral out from this term's own anchor until it fits with no overlap
+        let angle = rand() * Math.PI * 2;
+        let radius = 0;
+        let x = a.x - w / 2;
+        let y = a.y - h / 2;
+        let steps = 0;
+        while (true) {
+          x = a.x - w / 2 + radius * Math.cos(angle);
+          y = a.y - h / 2 + radius * Math.sin(angle);
+          x = Math.max(0, Math.min(x, W - w)); // stay within width
+          if (y < 0) y = 0;
+          if (!hits(x, y, w, h)) break;
+          angle += 0.5;
+          radius += Math.max(3, Math.min(cellW, cellH) * 0.12);
+          if (++steps > 4000) break;
+        }
+        insert({ x, y, w, h });
+        pos[idx] = { x, y };
+        maxY = Math.max(maxY, y + h);
+      });
+
+      // fits (with 8% grace) or we're out of retries — done
+      if (!fit || attempt === ATTEMPTS - 1 || maxY <= externalH * 1.08) break;
+      scale = Math.max(0.5, scale * (externalH / maxY) * 0.95);
     }
-
-    const { insert, hits } = createSpatialHash();
-
-    const pos = new Array<{ x: number; y: number }>(n);
-    let maxY = 0;
-    order.forEach((idx, rank) => {
-      const { w, h } = dims[idx];
-      const a = ordered[rank % ordered.length];
-      const rand = makeRng(keys[idx]);
-      // spiral out from this term's own anchor until it fits with no overlap
-      let angle = rand() * Math.PI * 2;
-      let radius = 0;
-      let x = a.x - w / 2;
-      let y = a.y - h / 2;
-      let steps = 0;
-      while (true) {
-        x = a.x - w / 2 + radius * Math.cos(angle);
-        y = a.y - h / 2 + radius * Math.sin(angle);
-        x = Math.max(0, Math.min(x, W - w)); // stay within width
-        if (y < 0) y = 0;
-        if (!hits(x, y, w, h)) break;
-        angle += 0.5;
-        radius += Math.max(3, Math.min(cellW, cellH) * 0.12);
-        if (++steps > 4000) break;
-      }
-      insert({ x, y, w, h });
-      pos[idx] = { x, y };
-      maxY = Math.max(maxY, y + h);
-    });
 
     for (const el of tags) el.style.position = 'absolute';
     this.#base = dims.map((d, i) => ({ x: pos[i].x, y: pos[i].y, h: d.h }));
     this.#packH = Math.ceil(maxY);
     this.#packW = W;
+    this.#packScale = scale;
     this.#placed = new Map(
       dims.map((d, i) => [
         keys[i],
@@ -448,7 +496,7 @@ export class TagCloudLayout {
       el.style.maxWidth = wide
         ? `${Math.round(W * 0.6)}px`
         : 'min(6.5em, 100%)';
-      el.style.fontSize = `${Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W)).toFixed(1)}px`;
+      el.style.fontSize = `${Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W) * this.#packScale).toFixed(1)}px`;
       el.style.transform = '';
     }
     const dims = tags.map((el) => ({
@@ -576,7 +624,9 @@ export class TagCloudLayout {
       const b = base[i];
       if (!b) return;
       const top = sy === 1 ? b.y : Math.min(b.y * sy, Math.max(0, H - b.h));
-      el.style.left = `${Math.round(b.x)}px`;
+      // logical inline offset: measured from the left in LTR, from the
+      // right in RTL — the whole layout mirrors for RTL documents (#11)
+      el.style.insetInlineStart = `${Math.round(b.x)}px`;
       el.style.top = `${Math.round(top)}px`;
     });
     if (flipFrom) this.#playFlip(tags, flipFrom);
