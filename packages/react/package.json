@@ -1,7 +1,7 @@
 {
   "name": "@opentagcloud/react",
   "version": "0.3.0",
-  "description": "React adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud. Works in Next.js (ships 'use client').",
+  "description": "React adapter for openTagCloud \u2014 a dependency-free, self-packing, SSR-friendly tag cloud. Works in Next.js (ships 'use client').",
   "keywords": [
     "react",
     "nextjs",
@@ -54,5 +54,8 @@
     "react-dom": "^19.0.0",
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
