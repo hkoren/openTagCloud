@@ -9,3 +9,4 @@ export { injectStyles, TAG_CLOUD_CSS } from './styles.js';
 export { makeRng } from './rng.js';
 export { mount, defineElement } from './vanilla.js';
 export type { MountOptions, CloudHandle } from './vanilla.js';
+export { estimateCloudHeight } from './estimate.js';

@@ -51,6 +51,8 @@ export const TagCloud = defineComponent({
       type: [Boolean, Function] as PropType<PrepareOptions['ariaLabel']>,
       default: undefined,
     },
+    /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
+    incremental: { type: Boolean, default: false },
   },
   setup(props) {
     const root = ref<HTMLElement>();
@@ -66,7 +68,10 @@ export const TagCloud = defineComponent({
     );
 
     onMounted(() => {
-      layout = new TagCloudLayout(root.value!, { fill: props.fill });
+      layout = new TagCloudLayout(root.value!, {
+        fill: props.fill,
+        incremental: props.incremental,
+      });
       layout.attach();
     });
     onBeforeUnmount(() => {

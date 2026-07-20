@@ -18,11 +18,12 @@
   <body>
     <div id="box"><div id="cloud"></div></div>
     <script type="module">
-      import { renderTagCloud } from '/core/index.js';
+      import { renderTagCloud, estimateCloudHeight } from '/core/index.js';
 
       const params = new URLSearchParams(location.search);
       const n = Number(params.get('n') || 24);
       const fill = params.get('fill') || undefined;
+      const incremental = params.has('incremental');
 
       const items = Array.from({ length: n }, (_, i) => ({
         label: `tag${i}`,
@@ -32,7 +33,15 @@
 
       window.cloud = renderTagCloud(document.getElementById('cloud'), items, {
         fill,
+        incremental,
       });
+      window.estimate = (w) => estimateCloudHeight(items, w);
+      window.addOne = () =>
+        window.cloud.update([...items, { label: 'newcomer', weight: 50 }]);
+      window.reweightOne = () => {
+        const next = items.map((t, i) => (i === 3 ? { ...t, weight: 99 } : t));
+        window.cloud.update(next);
+      };
       window.boxes = () =>
         [...document.querySelectorAll('.otc-tag')].map((el) => ({
           key: el.dataset.key,
