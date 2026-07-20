@@ -236,6 +236,7 @@
 
     <main>
       <nav class="example-links" aria-label="Example navigation">
+        <a class="example-link" href="#frameworks">Frameworks</a>
         <a class="example-link" href="#basic">Basic</a>
         <a class="example-link" href="#theming">Theming</a>
         <a class="example-link" href="#colors">Per-tag color</a>
@@ -244,6 +245,18 @@
       </nav>
 
       <div class="grid">
+        <section class="card wide" id="frameworks">
+          <div class="copy">
+            <h2>One engine, every framework</h2>
+            <p>
+              The Svelte, React, Vue, Angular, SolidJS, and Next.js adapters all
+              use the same deterministic layout shown here — click a tag to open
+              its npm package.
+            </p>
+          </div>
+          <div class="cloud" id="framework-cloud"></div>
+        </section>
+
         <section class="card" id="basic">
           <div class="copy">
             <h2>Basic JavaScript</h2>
@@ -293,17 +306,6 @@
               { "label": "Macchiato", "weight": 30 }
             ]'
           ></otc-tag-cloud>
-        </section>
-
-        <section class="card wide">
-          <div class="copy">
-            <h2>One engine, every framework</h2>
-            <p>
-              The Svelte, React, Vue, Angular, SolidJS, and Next.js adapters all
-              use the same deterministic layout shown here.
-            </p>
-          </div>
-          <div class="cloud" id="framework-cloud"></div>
         </section>
 
         <section class="card wide" id="pages">
@@ -381,16 +383,25 @@
         })),
         { minPx: 13, maxPx: 45 },
       );
+      const npmPkg = (name) => `https://www.npmjs.com/package/${name}`;
       openTagCloud.mount(
         document.querySelector('#framework-cloud'),
         [
-          { label: 'Svelte 5', weight: 80, href: '#framework-cloud' },
-          { label: 'React', weight: 80, href: '#framework-cloud' },
-          { label: 'Vue 3', weight: 80, href: '#framework-cloud' },
-          { label: 'Angular', weight: 80, href: '#framework-cloud' },
-          { label: 'SolidJS', weight: 80, href: '#framework-cloud' },
-          { label: 'Next.js', weight: 80, href: '#framework-cloud' },
-          { label: 'Vanilla JS', weight: 80, href: '#framework-cloud' },
+          { label: 'Svelte 5', weight: 80, href: npmPkg('opentagcloud') },
+          { label: 'React', weight: 80, href: npmPkg('@opentagcloud/react') },
+          { label: 'Vue 3', weight: 80, href: npmPkg('@opentagcloud/vue') },
+          {
+            label: 'Angular',
+            weight: 80,
+            href: npmPkg('@opentagcloud/angular'),
+          },
+          { label: 'SolidJS', weight: 80, href: npmPkg('@opentagcloud/solid') },
+          { label: 'Next.js', weight: 80, href: npmPkg('@opentagcloud/next') },
+          {
+            label: 'Vanilla JS',
+            weight: 80,
+            href: npmPkg('@opentagcloud/core'),
+          },
         ],
         { minPx: 18, maxPx: 36, fill: 'height' },
       );
