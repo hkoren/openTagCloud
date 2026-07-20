@@ -4,6 +4,8 @@ A dependency-free, self-packing, SSR-friendly **tag cloud** — a
 framework-agnostic core with thin adapters for **Svelte, React, Vue, Angular,
 SolidJS, and Next.js** (plus a pure vanilla-JS entry point).
 
+**[View the live, interactive examples →](https://hkoren.github.io/openTagCloud/)**
+
 Terms are laid out by a lightweight packer that seeds the heaviest tags across
 the container and spirals the rest out from their anchors until nothing
 overlaps — so the cloud **fills its container** at any size or aspect ratio
@@ -90,8 +92,10 @@ JS (`el.items = [...]` re-renders in place). The global also exposes
 `openTagCloud.mount(container, items, options)` →
 `{ el, update(items), repack(), destroy() }`, and the same API is importable as
 `opentagcloud/vanilla` (or from `@opentagcloud/core`, where it lives). ES-module
-consumers register the element explicitly with `defineElement()`. A runnable
-page is in [`packages/core/examples/vanilla.html`](packages/core/examples/vanilla.html).
+consumers register the element explicitly with `defineElement()`. See the
+[`vanilla and custom-element examples`](https://hkoren.github.io/openTagCloud/)
+running in your browser, or view the
+[`example source`](packages/core/examples/vanilla.html).
 
 ### Svelte 5
 

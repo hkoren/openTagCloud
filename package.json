@@ -14,6 +14,7 @@
     "check": "npm run check -w opentagcloud",
     "test": "npm run test -w @opentagcloud/core -w opentagcloud -w @opentagcloud/react -w @opentagcloud/vue -w @opentagcloud/solid -w @opentagcloud/angular",
     "test:e2e": "playwright test",
+    "pages:build": "npm run build -w @opentagcloud/core && node scripts/build-pages.mjs",
     "release": "node scripts/publish.mjs",
     "format": "prettier --write .",
     "lint": "prettier --check ."

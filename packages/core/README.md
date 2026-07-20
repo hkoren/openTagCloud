@@ -46,8 +46,9 @@ element and exposes `openTagCloud.mount(container, items, options)`:
 `mount()` and `defineElement()` are also exported from the package root and the
 `./vanilla` subpath for ES-module consumers (call `defineElement()` to register
 the element). Both are thin wrappers over `renderTagCloud` — same engine, same
-markup contract. A runnable page is in
-[`examples/vanilla.html`](examples/vanilla.html).
+markup contract. Try the
+[live vanilla example](https://hkoren.github.io/openTagCloud/) or view the
+[`example source`](examples/vanilla.html).
 
 ## SSR height estimation
 

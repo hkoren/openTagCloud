@@ -1,6 +1,7 @@
 node_modules
 # Build outputs — packages are published to npm, so dist is no longer committed.
 dist
+/dist-pages
 /build
 .svelte-kit
 /package
