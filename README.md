@@ -164,14 +164,15 @@ vite-plugin-solid like your own code.)
 
 ## Props (identical across adapters)
 
-| Prop         | Type                            | Default | Description                                                                                                                                 |
-| ------------ | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `items`      | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                                                                                          |
-| `minPx`      | `number`                        | `12`    | Font size (px) of the lightest tag.                                                                                                         |
-| `maxPx`      | `number`                        | `40`    | Font size (px) of the heaviest tag.                                                                                                         |
-| `fill`       | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                 |
-| `minOpacity` | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.    |
-| `ariaLabel`  | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n. |
+| Prop          | Type                            | Default | Description                                                                                                                                                        |
+| ------------- | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `items`       | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                                                                                                                 |
+| `minPx`       | `number`                        | `12`    | Font size (px) of the lightest tag.                                                                                                                                |
+| `maxPx`       | `number`                        | `40`    | Font size (px) of the heaviest tag.                                                                                                                                |
+| `fill`        | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                                        |
+| `minOpacity`  | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.                           |
+| `ariaLabel`   | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n.                        |
+| `incremental` | `boolean`                       | `false` | Keep unchanged tags in place across item updates — only new/changed tags move (great for live data). Falls back to a full re-pack on width changes or heavy churn. |
 
 ### `TagCloudItem`
 
@@ -192,15 +193,43 @@ grid row) — the cloud packs to that width and grows its `min-height` to fit.
 `minPx`/`maxPx` set the font range; the packer also scales fonts down for
 many/long tags and narrow containers.
 
+### Avoiding layout shift (CLS)
+
+Before JS packs (SSR, slow networks) the tags render in a justified inline
+fallback whose height differs from the packed layout. Two mitigations:
+
+- **Fixed-height container** — the cloud can never shift its siblings. This is
+  the zero-shift option and what the demos do.
+- **`estimateCloudHeight(items, width, options?)`** — a pure, DOM-free helper
+  (SSR-safe) that mirrors the packer's box-height formula, good to roughly
+  ±25%. Reserve the space server-side:
+
+  ```svelte
+  <div style="min-height: {estimateCloudHeight(items, 720)}px">
+    <TagCloud {items} />
+  </div>
+  ```
+
+## Animations
+
+Re-packs and resizes animate by default: moved tags FLIP smoothly from their
+old position to the new one and added tags scale in, driven by the
+`--otc-move-transition` custom property (default `250ms` ease-out). The initial
+pack never animates, `prefers-reduced-motion: reduce` disables it
+automatically, and `--otc-move-transition: 0s` turns it off manually. For
+live-updating clouds, combine with `incremental` so existing tags mostly hold
+still while new ones slide in.
+
 ## Theming
 
 Style it with CSS custom properties (all optional):
 
-| Property            | Default        | Description               |
-| ------------------- | -------------- | ------------------------- |
-| `--otc-color`       | `currentColor` | Tag text color.           |
-| `--otc-hover-color` | `#2563eb`      | Link hover/focus color.   |
-| `--otc-transition`  | `150ms ease`   | Color/opacity transition. |
+| Property                | Default          | Description                                           |
+| ----------------------- | ---------------- | ----------------------------------------------------- |
+| `--otc-color`           | `currentColor`   | Tag text color.                                       |
+| `--otc-hover-color`     | `#2563eb`        | Link hover/focus color.                               |
+| `--otc-transition`      | `150ms ease`     | Color/opacity transition.                             |
+| `--otc-move-transition` | `250ms` ease-out | Movement (FLIP) animation on re-packs; `0s` disables. |
 
 ```html
 <div style="--otc-color:#a7b0c0; --otc-hover-color:#66e0c0; height:320px">

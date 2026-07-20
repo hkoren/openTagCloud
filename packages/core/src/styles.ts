@@ -31,7 +31,10 @@ export const TAG_CLOUD_CSS = `.otc-cloud {
   .otc-tag {
     transition:
       color var(--otc-transition, 150ms ease),
-      opacity var(--otc-transition, 150ms ease);
+      opacity var(--otc-transition, 150ms ease),
+      /* FLIP move/entrance animation on re-packs; set --otc-move-transition
+         to 0s to disable */
+        transform var(--otc-move-transition, 250ms cubic-bezier(0.22, 1, 0.36, 1));
   }
 }
 a.otc-tag:hover,

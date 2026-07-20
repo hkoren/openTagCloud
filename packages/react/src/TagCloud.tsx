@@ -31,6 +31,8 @@ export interface TagCloudProps {
    * container (e.g. a grid-row sibling) so neighbours stay aligned.
    */
   fill?: Fill;
+  /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
+  incremental?: boolean;
   /** Extra class(es) on the cloud container. */
   className?: string;
 }
@@ -71,6 +73,7 @@ export function TagCloud({
   minOpacity = 0.62,
   ariaLabel,
   fill,
+  incremental = false,
   className,
 }: TagCloudProps) {
   const root = useRef<HTMLDivElement>(null);
@@ -81,7 +84,7 @@ export function TagCloud({
   );
 
   useEffect(() => {
-    const l = new TagCloudLayout(root.current!, { fill });
+    const l = new TagCloudLayout(root.current!, { fill, incremental });
     layout.current = l;
     l.attach();
     return () => {

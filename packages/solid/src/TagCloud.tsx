@@ -31,6 +31,8 @@ export interface TagCloudProps {
   minOpacity?: number;
   /** Accessible name per tag: true → "<label>, weight <weight>", or a custom fn. */
   ariaLabel?: PrepareOptions['ariaLabel'];
+  /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
+  incremental?: boolean;
   /** Extra class(es) on the cloud container. */
   class?: string;
 }
@@ -69,7 +71,10 @@ export function TagCloud(props: TagCloudProps) {
   );
 
   onMount(() => {
-    layout = new TagCloudLayout(root, { fill: props.fill });
+    layout = new TagCloudLayout(root, {
+      fill: props.fill,
+      incremental: props.incremental,
+    });
     layout.attach();
     onCleanup(() => {
       layout?.destroy();

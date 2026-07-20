@@ -49,6 +49,12 @@ the element). Both are thin wrappers over `renderTagCloud` — same engine, same
 markup contract. A runnable page is in
 [`examples/vanilla.html`](examples/vanilla.html).
 
+## SSR height estimation
+
+`estimateCloudHeight(items, width, options?)` is pure and DOM-free: emit it as
+the container's `min-height` during SSR to reserve space and avoid layout
+shift (roughly ±25% of the real packed height).
+
 ## Building your own adapter
 
 - `prepareTags(items, { minPx, maxPx })` — pure and DOM-free: returns each

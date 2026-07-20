@@ -16,6 +16,7 @@
     minOpacity = 0.62,
     ariaLabel,
     fill,
+    incremental = false,
   }: {
     /** The tags to lay out. */
     items: TagCloudItem[];
@@ -33,6 +34,8 @@
     minOpacity?: number;
     /** Accessible name per tag: true → "<label>, weight <weight>", or a custom fn. */
     ariaLabel?: PrepareOptions['ariaLabel'];
+    /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
+    incremental?: boolean;
   } = $props();
 
   const prepared = $derived(
@@ -43,7 +46,7 @@
   let layout: TagCloudLayout | undefined;
 
   onMount(() => {
-    layout = new TagCloudLayout(root, { fill });
+    layout = new TagCloudLayout(root, { fill, incremental });
     layout.attach();
     return () => layout?.destroy();
   });

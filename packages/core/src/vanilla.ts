@@ -10,6 +10,8 @@ import { renderTagCloud } from './render.js';
 export interface MountOptions extends PrepareOptions {
   /** Spread terms to fill a taller container. */
   fill?: Fill;
+  /** Keep unchanged tags in place across `update()` calls (see TagCloudLayoutOptions). */
+  incremental?: boolean;
 }
 
 export interface CloudHandle {
@@ -81,6 +83,7 @@ export function defineElement(tagName?: string): void {
         'min-opacity',
         'fill',
         'weight-labels',
+        'incremental',
       ];
     }
 
@@ -143,6 +146,7 @@ export function defineElement(tagName?: string): void {
         // boolean attribute: announce "<label>, weight <weight>" to screen readers
         ariaLabel: this.hasAttribute('weight-labels') || undefined,
         fill: (this.getAttribute('fill') || undefined) as Fill | undefined,
+        incremental: this.hasAttribute('incremental'),
       });
     }
   }

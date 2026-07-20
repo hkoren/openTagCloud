@@ -95,6 +95,8 @@ export class TagCloudComponent
   @Input() minOpacity = 0.62;
   /** Accessible name per tag: true → "<label>, weight <weight>", or a custom fn. */
   @Input() ariaLabel?: PrepareOptions['ariaLabel'];
+  /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
+  @Input() incremental = false;
 
   protected prepared: PreparedTag[] = [];
   private layout?: TagCloudLayout;
@@ -126,6 +128,7 @@ export class TagCloudComponent
     // TagCloudLayout.attach() is a no-op without a DOM, so this is SSR-safe.
     this.layout = new TagCloudLayout(this.host.nativeElement, {
       fill: this.fill,
+      incremental: this.incremental,
     });
     this.layout.attach();
   }
