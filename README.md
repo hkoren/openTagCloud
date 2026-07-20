@@ -242,8 +242,9 @@ vite-plugin-solid like your own code.)
 
 The cloud fills its parent. **Give the parent a height** (fixed, `flex`, or a
 grid row) — and the packer _fits_ it: it detects the externally imposed height
-and scales the whole font ramp up or down (bounded ×0.6–×2.5) so the tags
-fill the box with minimal dead space and the largest type that fits. In
+and **grows** the whole font ramp (up to ×2.5, never below the base sizes) so
+the tags fill the box with the largest type that fits; a box too small for the
+tags at their base sizes overflows instead — type stays legible. In
 auto-height containers it instead packs to the tags' natural area and grows
 its `min-height` — never reading a height it caused itself, so layout can't
 feed back. `minPx`/`maxPx` set the _relative_ font ramp; the packer also
