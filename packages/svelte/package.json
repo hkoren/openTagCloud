@@ -1,6 +1,6 @@
 {
   "name": "opentagcloud",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A dependency-free, self-packing, SSR-friendly tag cloud component for Svelte 5. Thin adapter over @opentagcloud/core.",
   "keywords": [
     "svelte",
@@ -62,7 +62,7 @@
     "build:demo": "vite build"
   },
   "dependencies": {
-    "@opentagcloud/core": "^0.3.0"
+    "@opentagcloud/core": "^0.4.0"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
