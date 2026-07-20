@@ -24,6 +24,9 @@
       const n = Number(params.get('n') || 24);
       const fill = params.get('fill') || undefined;
       const incremental = params.has('incremental');
+      if (params.get('dir') === 'rtl') document.documentElement.dir = 'rtl';
+      if (params.has('auto'))
+        document.getElementById('box').style.height = 'auto';
 
       const items = Array.from({ length: n }, (_, i) => ({
         label: `tag${i}`,

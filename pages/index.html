@@ -167,6 +167,15 @@
       .wide .cloud {
         height: 270px;
       }
+      .page-list {
+        margin: 0.75rem 0 0;
+        padding-left: 1.1rem;
+        line-height: 1.9;
+      }
+      .page-list a {
+        color: #4338ca;
+        font-weight: 600;
+      }
       footer {
         padding: 0 1.25rem 3rem;
         color: #647087;
@@ -231,6 +240,7 @@
         <a class="example-link" href="#theming">Theming</a>
         <a class="example-link" href="#colors">Per-tag color</a>
         <a class="example-link" href="#element">Custom element</a>
+        <a class="example-link" href="#pages">Full pages</a>
       </nav>
 
       <div class="grid">
@@ -294,6 +304,31 @@
             </p>
           </div>
           <div class="cloud" id="framework-cloud"></div>
+        </section>
+
+        <section class="card wide" id="pages">
+          <div class="copy">
+            <h2>Full example pages</h2>
+            <p>
+              Complete, viewable pages straight from the repository — open them
+              to see each integration running on its own.
+            </p>
+            <ul class="page-list">
+              <li>
+                <a href="svelte/">Svelte component demo</a> — the prerendered
+                SvelteKit demo app: sizing, theming, and per-tag color.
+              </li>
+              <li>
+                <a href="examples/vanilla.html">Vanilla / no-build</a> — a
+                single script tag: <code>mount()</code> and the
+                <code>&lt;otc-tag-cloud&gt;</code> custom element.
+              </li>
+              <li>
+                <a href="examples/rtl.html">Right-to-left</a> — the layout
+                mirrors automatically under <code>dir="rtl"</code>.
+              </li>
+            </ul>
+          </div>
         </section>
       </div>
     </main>

@@ -4,6 +4,8 @@ A dependency-free, self-packing, SSR-friendly **tag cloud** — a
 framework-agnostic core with thin adapters for **Svelte, React, Vue, Angular,
 SolidJS, and Next.js** (plus a pure vanilla-JS entry point).
 
+**[Live examples →](https://hkoren.github.io/openTagCloud/)**
+
 **[View the live, interactive examples →](https://hkoren.github.io/openTagCloud/)**
 
 Terms are laid out by a lightweight packer that seeds the heaviest tags across
@@ -193,9 +195,16 @@ vite-plugin-solid like your own code.)
 ## Sizing
 
 The cloud fills its parent. **Give the parent a height** (fixed, `flex`, or a
-grid row) — the cloud packs to that width and grows its `min-height` to fit.
-`minPx`/`maxPx` set the font range; the packer also scales fonts down for
-many/long tags and narrow containers.
+grid row) — and the packer _fits_ it: it detects the externally imposed height
+and scales the whole font ramp up or down (bounded ×0.6–×2.5) so the tags
+fill the box with minimal dead space and the largest type that fits. In
+auto-height containers it instead packs to the tags' natural area and grows
+its `min-height` — never reading a height it caused itself, so layout can't
+feed back. `minPx`/`maxPx` set the _relative_ font ramp; the packer also
+scales fonts down for many/long tags and narrow containers.
+
+Right-to-left documents are supported out of the box: tags are positioned with
+CSS logical properties, so the whole layout mirrors under `dir="rtl"`.
 
 ### Avoiding layout shift (CLS)
 

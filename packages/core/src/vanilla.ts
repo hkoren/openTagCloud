@@ -39,11 +39,11 @@ export function mount(
   if (!container) throw new Error('openTagCloud.mount: container is required');
   const doc = container.ownerDocument || document;
   const root = doc.createElement('div');
-  // fill='height'/'both' distributes against the root's own height, so the
-  // root must inherit the container's height even in a plain (non-flex) parent.
-  if (options.fill === 'height' || options.fill === 'both') {
-    root.style.height = '100%';
-  }
+  // Inherit the container's height even in a plain (non-flex) parent: the
+  // fit-to-container font scaling (#16) and fill='height' distribution both
+  // measure against the root's own height. (100% of an auto-height parent
+  // resolves to auto, so unsized containers are unaffected.)
+  root.style.height = '100%';
   container.appendChild(root);
   const handle = renderTagCloud(root, items, options);
   return {

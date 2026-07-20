@@ -1,4 +1,5 @@
-import { cp, mkdir, rm } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -16,5 +17,36 @@ await cp(
   path.join(output, 'assets', 'opentagcloud.vanilla.js'),
 );
 await cp(path.join(root, 'LICENSE'), path.join(output, 'LICENSE.txt'));
+
+// The repo's standalone example pages, rewired to the assets copy of the UMD.
+await mkdir(path.join(output, 'examples'), { recursive: true });
+for (const name of ['vanilla.html', 'rtl.html']) {
+  const html = await readFile(
+    path.join(root, 'packages', 'core', 'examples', name),
+    'utf8',
+  );
+  await writeFile(
+    path.join(output, 'examples', name),
+    html.replace(
+      '../dist/opentagcloud.vanilla.js',
+      '../assets/opentagcloud.vanilla.js',
+    ),
+  );
+}
+
+// The SvelteKit demo app, prerendered under /svelte/ (BASE_PATH keeps its
+// asset URLs correct on the project page).
+execSync('npm run build:demo -w opentagcloud', {
+  stdio: 'inherit',
+  cwd: root,
+  env: { ...process.env, BASE_PATH: `${process.env.PAGES_BASE || ''}/svelte` },
+});
+await cp(
+  path.join(root, 'packages', 'svelte', 'build'),
+  path.join(output, 'svelte'),
+  {
+    recursive: true,
+  },
+);
 
 console.log(`GitHub Pages site built at ${output}`);

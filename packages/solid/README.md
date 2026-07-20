@@ -25,10 +25,12 @@ export function Page() {
 }
 ```
 
-Ships uncompiled Solid JSX under the `solid` export condition, compiled by
-vite-plugin-solid (standard in Solid and SolidStart apps) alongside your own
-code. SSR-safe: the deterministic per-tag scatter keeps server and hydrated
-markup in sync.
+Ships two builds: uncompiled Solid JSX under the `solid` export condition
+(compiled by vite-plugin-solid alongside your own code, as in every Solid /
+SolidStart app), plus a pre-compiled DOM build as the `import`/`default`
+entry — so Jest/Vitest in Node, webpack/Rspack, and other setups that don't
+transform `node_modules` work out of the box. SSR-safe: the deterministic
+per-tag scatter keeps server and hydrated markup in sync.
 
 Props (`items`, `minPx`, `maxPx`, `fill`, `class`), theming custom properties,
 and the layout algorithm are documented in the
