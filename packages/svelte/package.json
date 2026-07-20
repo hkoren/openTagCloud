@@ -1,11 +1,8 @@
 {
   "name": "opentagcloud",
   "version": "0.4.0",
-  "description": "A dependency-free, self-packing, SSR-friendly tag cloud component for Svelte 5. Thin adapter over @opentagcloud/core.",
+  "description": "A dependency-free, self-packing, SSR-friendly tag cloud for any framework — Svelte 5 component, vanilla-JS mount(), and the <otc-tag-cloud> custom element in one package; React, Vue, Angular, Solid, and Next.js adapters ship as @opentagcloud/*.",
   "keywords": [
-    "svelte",
-    "svelte5",
-    "sveltekit",
     "tag-cloud",
     "tagcloud",
     "wordcloud",
@@ -13,7 +10,17 @@
     "component",
     "vanilla",
     "no-build",
-    "umd"
+    "umd",
+    "web-component",
+    "custom-element",
+    "svelte",
+    "svelte5",
+    "sveltekit",
+    "react",
+    "vue",
+    "angular",
+    "solidjs",
+    "nextjs"
   ],
   "license": "MIT",
   "author": "Henry Koren",

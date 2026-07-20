@@ -34,7 +34,10 @@
 
 <main>
   <h1>openTagCloud</h1>
-  <p>A dependency-free, self-packing tag cloud component for Svelte 5.</p>
+  <p>
+    A dependency-free, self-packing tag cloud for any framework — shown here via
+    the Svelte 5 component.
+  </p>
 
   <div class="box">
     <TagCloud items={languages} />
