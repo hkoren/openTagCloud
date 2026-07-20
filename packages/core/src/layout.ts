@@ -114,6 +114,9 @@ export class TagCloudLayout {
   #ro?: ResizeObserver;
   #onResize?: () => void;
   #destroyed = false;
+  // suppress the FLIP for packs that belong to initial rendering (the
+  // fonts.ready re-measure) — animating font-metric corrections reads as jank
+  #skipFlip = false;
 
   constructor(root: HTMLElement, options: TagCloudLayoutOptions = {}) {
     this.#root = root;
@@ -156,7 +159,13 @@ export class TagCloudLayout {
     this.#ro.observe(this.#root);
     window.addEventListener('resize', onResize);
     document.fonts?.ready?.then(() => {
-      if (!this.#destroyed) this.pack();
+      if (this.#destroyed) return;
+      this.#skipFlip = true;
+      try {
+        this.pack();
+      } finally {
+        this.#skipFlip = false;
+      }
     });
   }
 
@@ -274,7 +283,9 @@ export class TagCloudLayout {
     // FLIP source: visual positions before anything moves (never on the
     // initial pack — the fallback→packed swap should not zoom every tag).
     const flipFrom =
-      root.classList.contains('otc-packed') && this.#moveEnabled()
+      root.classList.contains('otc-packed') &&
+      !this.#skipFlip &&
+      this.#moveEnabled()
         ? this.#snapshot(tags)
         : null;
 
@@ -314,10 +325,12 @@ export class TagCloudLayout {
     const wide = W >= 380;
     const setBase = (scale: number) => {
       for (const el of tags) {
+        // nowrap tags must measure at their TRUE width — clamping with
+        // max-width makes offsetWidth lie while the glyphs overflow the box
+        // (overlaps at fit scale); overlong tags are font-shrunk after
+        // measuring instead
         el.style.whiteSpace = wide ? 'nowrap' : 'normal';
-        el.style.maxWidth = wide
-          ? `${Math.round(W * 0.6)}px`
-          : 'min(6.5em, 100%)';
+        el.style.maxWidth = wide ? 'none' : 'min(6.5em, 100%)';
         el.style.fontSize = `${Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W) * scale).toFixed(1)}px`;
       }
     };
@@ -355,11 +368,13 @@ export class TagCloudLayout {
         setBase(scale);
         dims = measure();
       }
-      // shrink any term still wider than the box (unbreakable long word)
+      // shrink any term wider than its budget: the container itself, or (in
+      // nowrap mode) 85% of it, so one long tag can't monopolize a row
+      const maxTagW = wide ? W * 0.85 : W;
       for (const d of dims) {
-        if (d.w > W) {
+        if (d.w > maxTagW) {
           const cur = parseFloat(d.el.style.fontSize) || 12;
-          d.el.style.fontSize = `${Math.max(9, cur * (W / d.w)).toFixed(1)}px`;
+          d.el.style.fontSize = `${Math.max(9, cur * (maxTagW / d.w)).toFixed(1)}px`;
           d.w = d.el.offsetWidth;
           d.h = d.el.offsetHeight;
         }
@@ -493,9 +508,7 @@ export class TagCloudLayout {
     const wide = W >= 380;
     for (const el of tags) {
       el.style.whiteSpace = wide ? 'nowrap' : 'normal';
-      el.style.maxWidth = wide
-        ? `${Math.round(W * 0.6)}px`
-        : 'min(6.5em, 100%)';
+      el.style.maxWidth = wide ? 'none' : 'min(6.5em, 100%)';
       el.style.fontSize = `${Math.max(8, parseFloat(el.dataset.fs || '12') * widthFactor(W) * this.#packScale).toFixed(1)}px`;
       el.style.transform = '';
     }
@@ -504,10 +517,11 @@ export class TagCloudLayout {
       w: el.offsetWidth,
       h: el.offsetHeight,
     }));
+    const maxTagW = wide ? W * 0.85 : W;
     for (const d of dims) {
-      if (d.w > W) {
+      if (d.w > maxTagW) {
         const cur = parseFloat(d.el.style.fontSize) || 12;
-        d.el.style.fontSize = `${Math.max(9, cur * (W / d.w)).toFixed(1)}px`;
+        d.el.style.fontSize = `${Math.max(9, cur * (maxTagW / d.w)).toFixed(1)}px`;
         d.w = d.el.offsetWidth;
         d.h = d.el.offsetHeight;
       }

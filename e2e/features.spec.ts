@@ -220,3 +220,20 @@ test('RTL documents mirror the layout via logical positioning (#11)', async ({
     expect(Math.abs(m.y - b.y)).toBeLessThanOrEqual(2);
   }
 });
+
+test('long nowrap labels never overflow their measured boxes at fit scale (#16 regression)', async ({
+  page,
+}) => {
+  await page.goto('/?n=14&long');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const boxes = await getBoxes(page);
+  expect(countOverlaps(boxes)).toBe(0);
+  // and the rendered glyphs stay inside the measured box (no clamped overflow)
+  const overflowing = await page.evaluate(
+    () =>
+      [...document.querySelectorAll<HTMLElement>('.otc-tag')].filter(
+        (el) => el.scrollWidth > el.clientWidth + 1,
+      ).length,
+  );
+  expect(overflowing).toBe(0);
+});
