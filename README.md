@@ -36,6 +36,28 @@ across renders.
 | [`@opentagcloud/solid`](packages/solid)     | SolidJS / SolidStart                 | `<TagCloud />`                                        |
 | [`@opentagcloud/next`](packages/next)       | Next.js (alias of the React adapter) | `<TagCloud />`                                        |
 
+## Install
+
+All packages are on [npm](https://www.npmjs.com/package/opentagcloud). Pick
+the one for your stack:
+
+```sh
+npm install opentagcloud          # Svelte 5 component + vanilla mount() + <otc-tag-cloud>
+npm install @opentagcloud/react   # React 18+ (works in Next.js)
+npm install @opentagcloud/vue     # Vue 3 / Nuxt
+npm install @opentagcloud/angular # Angular 17+
+npm install @opentagcloud/solid   # SolidJS / SolidStart
+npm install @opentagcloud/next    # Next.js alias of the React adapter
+npm install @opentagcloud/core    # engine only — vanilla JS / custom adapters
+```
+
+Or skip npm entirely — one script tag from a CDN serves the vanilla build and
+registers the `<otc-tag-cloud>` custom element:
+
+```html
+<script src="https://unpkg.com/opentagcloud/dist/opentagcloud.vanilla.js"></script>
+```
+
 ## Architecture
 
 All layout logic lives in `@opentagcloud/core`:
@@ -58,6 +80,10 @@ container to `TagCloudLayout` on mount and calls `refresh()` when items change.
 ## Quick start
 
 ### Vanilla JS
+
+```sh
+npm install @opentagcloud/core
+```
 
 ```js
 import { renderTagCloud } from '@opentagcloud/core';
@@ -101,6 +127,10 @@ running in your browser, or view the
 
 ### Svelte 5
 
+```sh
+npm install opentagcloud
+```
+
 ```svelte
 <script lang="ts">
   import { TagCloud } from 'opentagcloud';
@@ -112,6 +142,10 @@ running in your browser, or view the
 ```
 
 ### React / Next.js
+
+```sh
+npm install @opentagcloud/react   # or @opentagcloud/next
+```
 
 ```tsx
 import { TagCloud } from '@opentagcloud/react'; // or '@opentagcloud/next'
@@ -126,6 +160,10 @@ Router and still server-renders the no-JS fallback.
 
 ### Vue 3
 
+```sh
+npm install @opentagcloud/vue
+```
+
 ```vue
 <script setup lang="ts">
 import { TagCloud } from '@opentagcloud/vue';
@@ -137,6 +175,10 @@ import { TagCloud } from '@opentagcloud/vue';
 ```
 
 ### Angular
+
+```sh
+npm install @opentagcloud/angular
+```
 
 ```ts
 import { TagCloudComponent } from '@opentagcloud/angular';
@@ -156,6 +198,10 @@ For a styled no-JS/SSR fallback, also add
 `angular.json` (optional — styles are injected at runtime either way).
 
 ### SolidJS
+
+```sh
+npm install @opentagcloud/solid
+```
 
 ```tsx
 import { TagCloud } from '@opentagcloud/solid';
