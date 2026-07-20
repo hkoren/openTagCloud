@@ -28,8 +28,24 @@
       if (params.has('auto'))
         document.getElementById('box').style.height = 'auto';
 
+      const longNames = [
+        'JavaScript',
+        'TypeScript',
+        'WebAssembly',
+        'Kubernetes',
+        'PostgreSQL',
+        'Elasticsearch',
+        'Microservices',
+        'Observability',
+        'Accessibility',
+        'Documentation',
+        'Infrastructure',
+        'Authentication',
+      ];
       const items = Array.from({ length: n }, (_, i) => ({
-        label: `tag${i}`,
+        label: params.has('long')
+          ? `${longNames[i % longNames.length]}${Math.floor(i / longNames.length) || ''}`
+          : `tag${i}`,
         weight: ((i * 37) % 100) + 1,
         href: `#t${i}`,
       }));
