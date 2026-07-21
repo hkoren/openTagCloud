@@ -4,8 +4,6 @@ A dependency-free, self-packing, SSR-friendly **tag cloud** — a
 framework-agnostic core with thin adapters for **Svelte, React, Vue, Angular,
 SolidJS, and Next.js** (plus a pure vanilla-JS entry point).
 
-**[Live examples →](https://hkoren.github.io/openTagCloud/)**
-
 **[View the live, interactive examples →](https://hkoren.github.io/openTagCloud/)**
 
 Terms are laid out by a lightweight packer that seeds the heaviest tags across
