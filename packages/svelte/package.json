@@ -1,7 +1,7 @@
 {
   "name": "opentagcloud",
-  "version": "0.4.1",
-  "description": "A dependency-free, self-packing, SSR-friendly tag cloud for any framework \u2014 Svelte 5 component, vanilla-JS mount(), and the <otc-tag-cloud> custom element in one package; React, Vue, Angular, Solid, and Next.js adapters ship as @opentagcloud/*.",
+  "version": "0.4.2-rc.0",
+  "description": "A dependency-free, self-packing, SSR-friendly tag cloud for any framework — Svelte 5 component, vanilla-JS mount(), and the <otc-tag-cloud> custom element in one package; React, Vue, Angular, Solid, and Next.js adapters ship as @opentagcloud/*.",
   "keywords": [
     "tag-cloud",
     "tagcloud",
@@ -69,7 +69,7 @@
     "build:demo": "vite build"
   },
   "dependencies": {
-    "@opentagcloud/core": "^0.4.1"
+    "@opentagcloud/core": "^0.4.2-rc.0"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"

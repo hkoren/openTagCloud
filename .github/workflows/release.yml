@@ -22,6 +22,10 @@ on:
         description: 'Skip the lint/build/check/test pipeline'
         type: boolean
         default: false
+      dist_tag:
+        description: 'npm dist-tag (use "next" for prereleases so latest is untouched)'
+        type: string
+        default: latest
 
 permissions:
   contents: read
@@ -63,4 +67,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Publish
-        run: npm run release -- --yes ${{ inputs.skip_verify && '--skip-verify' || '' }}
+        run: |
+          npm run release -- --yes \
+            --tag "${{ inputs.dist_tag || 'latest' }}" \
+            ${{ inputs.skip_verify && '--skip-verify' || '' }}
