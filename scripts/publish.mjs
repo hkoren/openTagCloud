@@ -13,10 +13,15 @@
 // Already-published versions are detected and skipped, so a run that dies
 // halfway can simply be re-run.
 //
-// First-time notes:
-//   - `npm login` first; publishing the @opentagcloud/* packages requires the
-//     "opentagcloud" org/scope to exist on your npm account
-//     (https://www.npmjs.com/org/create).
+// Authentication (any one of these):
+//   - `npm login` — interactive, prompts for 2FA in the browser per session.
+//   - A granular access token in the user npmrc, for unattended runs:
+//       npm config set //registry.npmjs.org/:_authToken=<token> --location=user
+//   - GitHub Actions trusted publishing (OIDC) — no token at all; used by
+//     .github/workflows/release.yml when a v* tag is pushed. See README.
+//
+// Notes:
+//   - The @opentagcloud/* packages need the "opentagcloud" org to exist.
 //   - @opentagcloud/angular publishes its ng-packagr output (packages/angular/dist).
 
 import { execSync, spawnSync } from 'node:child_process';
@@ -81,21 +86,32 @@ for (const p of PACKAGES) {
 }
 log(`version check ok across ${PACKAGES.length} packages`);
 
+// In CI the release workflow checks out an exact tag (detached HEAD) on
+// purpose, so the local-hygiene checks are informational there.
+const CI = !!process.env.CI;
+const fatal = YES && !CI ? die : log;
+
 const gitStatus = tryCapture(['git', 'status', '--porcelain']);
 if (gitStatus === null) die('not a git repository?');
 if (gitStatus !== '')
-  (YES ? die : log)(
-    'working tree is not clean — publish from a clean checkout of main',
-  );
+  fatal('working tree is not clean — publish from a clean checkout of main');
 const branch = tryCapture(['git', 'branch', '--show-current']);
-if (branch !== 'main')
-  (YES ? die : log)(`on branch "${branch}" — publish from main`);
+if (branch !== 'main') fatal(`on branch "${branch}" — publish from main`);
+if (CI) log('CI detected: git-state checks are advisory');
 
+// Auth: an interactive login, a granular access token in .npmrc
+// (//registry.npmjs.org/:_authToken=...), or GitHub Actions trusted
+// publishing (OIDC) — with OIDC there is no token, so whoami has nobody to
+// report and npm mints short-lived credentials at publish time.
 const whoami = tryCapture(['npm', 'whoami']);
+const oidc = CI && !!process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
 if (whoami) log(`npm user: ${whoami}`);
+else if (oidc)
+  log('no npm login — relying on GitHub Actions OIDC (trusted publishing)');
 else if (YES)
   die(
-    'not logged in to npm — run `npm login` first (and create the "opentagcloud" org for the scoped packages)',
+    'not authenticated to npm — run `npm login`, or set a granular access token ' +
+      '(npm config set //registry.npmjs.org/:_authToken=... --location=user)',
   );
 else log('not logged in to npm (fine for a dry run)');
 
