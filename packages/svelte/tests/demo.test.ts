@@ -16,8 +16,8 @@ describe('demo entry', () => {
     expect(app.querySelector('h1')?.textContent).toContain('openTagCloud');
     // The demo's whole point is showing a rendered cloud, so assert the tags
     // arrived rather than just that something mounted.
-    expect(
-      app.querySelectorAll('.otc-cloud .otc-tag').length,
-    ).toBeGreaterThan(0);
+    expect(app.querySelectorAll('.otc-cloud .otc-tag').length).toBeGreaterThan(
+      0,
+    );
   });
 });
