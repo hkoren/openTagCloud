@@ -6,9 +6,11 @@ name: Release to npm
 #
 # Authentication, in order of preference:
 #   1. Trusted publishing (OIDC) — nothing to store. Configure each package on
-#      npmjs.com → package → Settings → Trusted publisher → GitHub Actions
-#      (repo hkoren/openTagCloud, workflow release.yml). `id-token: write`
-#      below is what lets npm mint short-lived credentials.
+#      npmjs.com → package → Settings → Trusted publisher → GitHub Actions with
+#      organization "hkoren", repository "openTagCloud", workflow
+#      "release.yml", environment blank (this job defines none). Fields are
+#      case-sensitive. `id-token: write` below lets npm mint short-lived
+#      credentials, and provenance attestations are then automatic.
 #   2. A granular access token in the NPM_TOKEN repository secret, used when
 #      trusted publishing isn't configured for a package.
 on:
@@ -34,11 +36,18 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      # Node 24 for npm >= 11.5.1: trusted publishing (OIDC) needs it, and
+      # Node 22 still bundles npm 10.9.x. The explicit upgrade keeps this true
+      # even if the runner image changes, and the echo makes it visible in logs.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@^11.5.1
+          node -v && npm -v
       - run: npm ci
 
       # Token auth (skipped when the secret is absent, e.g. pure trusted
