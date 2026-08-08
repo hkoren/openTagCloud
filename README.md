@@ -349,17 +349,51 @@ npm run check      # svelte-check on the Svelte package
 
 ## Releasing
 
+Bump every package to the same version, merge, then push a tag — GitHub
+Actions publishes all seven packages unattended:
+
 ```sh
-npm run release          # dry-run rehearsal: verify pipeline + npm publish --dry-run for every package
-npm run release -- --yes # publish to npm for real (requires npm login)
+git tag v0.4.2 && git push origin v0.4.2
 ```
 
-The script publishes in dependency order (core first, Angular from its
-ng-packagr `dist/`), skips versions that are already on the registry (so a
-partial run can be re-run), and supports `--tag <dist-tag>` and
-`--skip-verify`. First-time setup: `npm login`, and create the
-[`opentagcloud` npm org](https://www.npmjs.com/org/create) for the scoped
-packages.
+`.github/workflows/release.yml` runs the full verify pipeline (lint, build,
+check, unit tests, Playwright) and then publishes in dependency order. It can
+also be started manually from the Actions tab.
+
+### Authentication (one-time)
+
+Either option makes releases unattended — no browser 2FA prompts:
+
+- **Trusted publishing (recommended, no secrets).** For each package on
+  npmjs.com → _Settings_ → _Trusted publisher_ → GitHub Actions, with
+  repository `hkoren/openTagCloud` and workflow `release.yml`. npm then mints
+  short-lived credentials per run via OIDC; nothing is stored anywhere.
+- **Granular access token.** npmjs.com → _Access Tokens_ → _Generate New
+  Token_ → _Granular_, with **read and write** on the `opentagcloud` packages
+  and the `opentagcloud` org. Store it as the `NPM_TOKEN` repository secret
+  (_Settings_ → _Secrets and variables_ → _Actions_). Note npm is
+  [restricting 2FA-bypassing tokens](https://gh.io/npm-gat-bypass2fa-deprecation),
+  so prefer trusted publishing long-term.
+
+### Publishing from your machine
+
+```sh
+npm run release          # dry-run rehearsal: verify pipeline + npm publish --dry-run
+npm run release -- --yes # publish for real
+```
+
+This needs either `npm login` (which prompts for browser 2FA on every publish
+session) or the same granular token in your user npmrc, which avoids the
+prompts entirely:
+
+```sh
+npm config set //registry.npmjs.org/:_authToken=<your-token> --location=user
+```
+
+Either way the script skips versions already on the registry, so an
+interrupted run can simply be re-run; `--tag <dist-tag>` and `--skip-verify`
+are also supported. The `@opentagcloud/*` names require the
+[`opentagcloud` npm org](https://www.npmjs.com/org/create).
 
 ## Credit
 
