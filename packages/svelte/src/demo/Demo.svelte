@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TagCloud, type TagCloudItem } from '$lib/index.js';
+  import { TagCloud, type TagCloudItem } from '../lib/index.js';
 
   // A weighted list of tags. `weight` drives the font size; `href` makes a tag a link.
   const languages: TagCloudItem[] = [
