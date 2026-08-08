@@ -366,8 +366,12 @@ Either option makes releases unattended — no browser 2FA prompts:
 
 - **Trusted publishing (recommended, no secrets).** For each package on
   npmjs.com → _Settings_ → _Trusted publisher_ → GitHub Actions, with
-  repository `hkoren/openTagCloud` and workflow `release.yml`. npm then mints
-  short-lived credentials per run via OIDC; nothing is stored anywhere.
+  organization `hkoren`, repository `openTagCloud`, workflow `release.yml`,
+  and **environment left blank** (the release job defines none). Fields are
+  case-sensitive. npm then mints short-lived credentials per run via OIDC —
+  nothing is stored anywhere — and publishes provenance attestations
+  automatically. Requires npm ≥ 11.5.1, which is why the workflow runs Node 24
+  (Node 22 still bundles npm 10.9.x).
 - **Granular access token.** npmjs.com → _Access Tokens_ → _Generate New
   Token_ → _Granular_, with **read and write** on the `opentagcloud` packages
   and the `opentagcloud` org. Store it as the `NPM_TOKEN` repository secret
