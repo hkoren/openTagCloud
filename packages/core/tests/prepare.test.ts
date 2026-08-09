@@ -70,6 +70,33 @@ describe('prepareTags', () => {
     warn.mockRestore();
   });
 
+  it('de-duplicates keys so adapters and the scatter seed stay sane (#37)', () => {
+    const prepared = prepareTags([
+      item('Java', 50),
+      item('Java', 20),
+      item('Java', 10),
+      item('Rust', 5),
+    ]);
+    expect(prepared.map((p) => p.key)).toEqual([
+      'Java',
+      'Java#2',
+      'Java#3',
+      'Rust',
+    ]);
+    // the visible text and the original item are untouched
+    expect(prepared[1].text).toBe('Java');
+    expect(prepared[1].item.weight).toBe(20);
+    // explicit ids collide the same way
+    expect(
+      prepareTags([item('a', 1, { id: 'x' }), item('b', 1, { id: 'x' })]).map(
+        (p) => p.key,
+      ),
+    ).toEqual(['x', 'x#2']);
+    // and it is stable across calls (SSR vs hydration)
+    const again = prepareTags([item('Java', 50), item('Java', 20)]);
+    expect(again.map((p) => p.key)).toEqual(['Java', 'Java#2']);
+  });
+
   it('keys by id, falling back to label', () => {
     expect(keyOf({ label: 'a', weight: 1 })).toBe('a');
     expect(keyOf({ label: 'a', weight: 1, id: 'x' })).toBe('x');

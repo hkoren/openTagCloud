@@ -54,6 +54,22 @@ describe('TagCloud (svelte)', () => {
     ).toBe('JavaScript, weight 95');
   });
 
+  it('renders duplicate labels instead of throwing each_key_duplicate (#37)', () => {
+    const { container } = render(TagCloud, {
+      items: [
+        { label: 'Java', weight: 50 },
+        { label: 'Java', weight: 20 },
+      ],
+    });
+    const tags = container.querySelectorAll('.otc-tag');
+    expect(tags).toHaveLength(2);
+    expect([...tags].map((t) => t.getAttribute('data-key'))).toEqual([
+      'Java',
+      'Java#2',
+    ]);
+    expect([...tags].every((t) => t.textContent === 'Java')).toBe(true);
+  });
+
   it('updates the rendered tags when items change', async () => {
     const { container, rerender } = render(TagCloud, { items });
     await rerender({ items: items.slice(0, 1) });
