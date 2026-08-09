@@ -40,7 +40,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "node ../../scripts/sync-changelog.mjs && node -e \"fs.rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node scripts/build-compiled.mjs",
+    "build": "node ../../scripts/sync-root-files.mjs && node -e \"fs.rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node scripts/build-compiled.mjs",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },

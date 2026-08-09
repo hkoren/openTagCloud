@@ -61,7 +61,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "node ../../scripts/sync-changelog.mjs && svelte-package && node scripts/copy-vanilla-umd.mjs && publint",
+    "build": "node ../../scripts/sync-root-files.mjs && svelte-package && node scripts/copy-vanilla-umd.mjs && publint",
     "test": "vitest run",
     "preview": "vite preview",
     "package": "npm run build",

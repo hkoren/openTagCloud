@@ -38,7 +38,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "node ../../scripts/sync-changelog.mjs && tsc -p tsconfig.json",
+    "build": "node ../../scripts/sync-root-files.mjs && tsc -p tsconfig.json",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
