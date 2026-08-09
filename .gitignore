@@ -1,6 +1,8 @@
 node_modules
 # Build outputs — packages are published to npm, so dist is no longer committed.
 dist
+# generated copies of the root CHANGELOG (see scripts/sync-changelog.mjs)
+packages/*/CHANGELOG.md
 /dist-pages
 build/
 .svelte-kit
