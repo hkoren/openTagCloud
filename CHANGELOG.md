@@ -44,6 +44,11 @@ Each entry links to its GitHub release, which carries the fuller narrative.
 
 ### Changed
 
+- The cloud now takes its container's aspect ratio: each term's growth front is
+  stretched to the box, so a wide container gets a wide elliptical cloud instead
+  of a circular one floating in the middle. Measured on a 3.6:1 container, the
+  cloud's aspect went from ~1.25 (nearly circular) to ~3.5.
+
 - Tags no longer default their tooltip to the raw weight — a bare number like
   "95" is meaningless to a visitor. `item.title` still sets one, and
   `ariaLabel` provides the explained form ([#40]).

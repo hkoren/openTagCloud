@@ -327,7 +327,11 @@ how far those anchors spread from the container's centre:
   overlap allows and the outer corners are left empty.
 - **`0.5`** (default) — in between.
 
-Terms never overlap at any density; only their starting points move. Note the
+Terms never overlap at any density; only their starting points move.
+
+The cloud also takes its **container's aspect ratio**: the spiral each term
+grows along is stretched to match the box, so a wide container gets a wide
+elliptical cloud rather than a circle floating in the middle of it. Note the
 tradeoff: raising density deliberately trades container fill for a tighter
 cloud, so a clustered cloud can be taller than an evenly distributed one in an
 auto-height container, and will not reach the edges of a sized one.
