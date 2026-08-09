@@ -399,6 +399,12 @@ interrupted run can simply be re-run; `--tag <dist-tag>` and `--skip-verify`
 are also supported. The `@opentagcloud/*` names require the
 [`opentagcloud` npm org](https://www.npmjs.com/org/create).
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md), or the
+[GitHub releases](https://github.com/hkoren/openTagCloud/releases) for the
+fuller narrative behind each version.
+
 ## Credit
 
 Extracted from the home-page tag cloud on
