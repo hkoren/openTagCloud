@@ -33,6 +33,15 @@ Each entry links to its GitHub release, which carries the fuller narrative.
   `CONTRIBUTING.md`, plus a README Security section documenting which
   `TagCloudItem` fields are validated and which are trusted input ([#42]).
 
+### Added
+
+- `density` (0–1, default `0.5`) on every adapter, `mount()`/`renderTagCloud()`,
+  and as a `density` attribute on `<otc-tag-cloud>`: `0` distributes terms
+  evenly across the container, `1` packs them tightly around the centre leaving
+  the corners empty. Terms never overlap at any setting. **This changes the
+  default arrangement** — pass `density={0}` for the previous even spread
+  ([#51]).
+
 ### Changed
 
 - Tags no longer default their tooltip to the raw weight — a bare number like
@@ -183,3 +192,4 @@ installed directly from GitHub.
 [#40]: https://github.com/hkoren/openTagCloud/issues/40
 [#41]: https://github.com/hkoren/openTagCloud/issues/41
 [#42]: https://github.com/hkoren/openTagCloud/issues/42
+[#51]: https://github.com/hkoren/openTagCloud/issues/51

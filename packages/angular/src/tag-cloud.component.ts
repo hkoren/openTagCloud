@@ -123,6 +123,8 @@ export class TagCloudComponent
   @Input() ariaLabel?: PrepareOptions['ariaLabel'];
   /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
   @Input() incremental = false;
+  /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
+  @Input() density?: number;
   /**
    * Emitted when a tag is activated. Subscribing renders non-link tags as
    * `<button>`, so they are focusable and keyboard-operable.
@@ -158,6 +160,7 @@ export class TagCloudComponent
       this.needsRefresh = !!this.layout;
     }
     if (changes['fill']) this.layout?.setFill(this.fill);
+    if (changes['density']) this.layout?.setDensity(this.density);
   }
 
   ngAfterViewInit(): void {
@@ -165,6 +168,7 @@ export class TagCloudComponent
     this.layout = new TagCloudLayout(this.host.nativeElement, {
       fill: this.fill,
       incremental: this.incremental,
+      density: this.density,
     });
     this.layout.attach();
   }

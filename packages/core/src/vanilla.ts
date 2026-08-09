@@ -12,6 +12,8 @@ export interface MountOptions extends PrepareOptions {
   fill?: Fill;
   /** Called when a tag is activated; renders non-link tags as buttons. */
   onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
+  /** How tightly terms cluster, 0–1 (default 0.5). */
+  density?: number;
   /** Keep unchanged tags in place across `update()` calls (see TagCloudLayoutOptions). */
   incremental?: boolean;
 }
@@ -19,6 +21,8 @@ export interface MountOptions extends PrepareOptions {
 export interface CloudHandle {
   /** Change the fill mode without re-packing from scratch. */
   setFill(fill: Fill | undefined): void;
+  /** Change the clustering density (0–1) and re-pack. */
+  setDensity(density: number | undefined): void;
   /** The generated `.otc-cloud` root element. */
   el: HTMLElement;
   /** Replace the items and re-render. */
@@ -54,6 +58,7 @@ export function mount(
     el: root,
     update: (next) => handle.update(next),
     repack: () => handle.repack(),
+    setDensity: (density) => handle.setDensity(density),
     setFill: (fill) => {
       // keep the root's height hint in sync, or a later height-fill would have
       // nothing to distribute against in a plain block container
@@ -94,6 +99,7 @@ export function defineElement(tagName?: string): void {
         'fill',
         'weight-labels',
         'incremental',
+        'density',
       ];
     }
 
@@ -135,6 +141,8 @@ export function defineElement(tagName?: string): void {
       if (attr === 'items') {
         // the property, once set, owns the data
         if (!this._items) this._handle.update(this.items);
+      } else if (attr === 'density') {
+        this._handle.setDensity(this._num('density'));
       } else if (attr === 'fill') {
         // fill only moves tags, so adjust in place — remounting would discard
         // the packed layout and the FLIP continuity
@@ -149,16 +157,19 @@ export function defineElement(tagName?: string): void {
       }
     }
 
+    private _num(attr: string): number | undefined {
+      const v = parseFloat(this.getAttribute(attr) || '');
+      return isFinite(v) ? v : undefined;
+    }
+
     private _mount(): void {
       if (this._handle) return;
-      const num = (attr: string) => {
-        const v = parseFloat(this.getAttribute(attr) || '');
-        return isFinite(v) ? v : undefined;
-      };
+      const num = (attr: string) => this._num(attr);
       this._handle = mount(this, this.items, {
         minPx: num('min-px'),
         maxPx: num('max-px'),
         minOpacity: num('min-opacity'),
+        density: num('density'),
         // boolean attribute: announce "<label>, weight <weight>" to screen readers
         ariaLabel: this.hasAttribute('weight-labels') || undefined,
         fill: (this.getAttribute('fill') || undefined) as Fill | undefined,

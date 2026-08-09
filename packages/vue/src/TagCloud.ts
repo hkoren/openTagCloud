@@ -53,6 +53,8 @@ export const TagCloud = defineComponent({
     },
     /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
     incremental: { type: Boolean, default: false },
+    /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
+    density: { type: Number, default: undefined },
     /** Called when a tag is activated; renders non-link tags as buttons. */
     onTagClick: {
       type: Function as PropType<
@@ -79,6 +81,7 @@ export const TagCloud = defineComponent({
       layout = new TagCloudLayout(root.value!, {
         fill: props.fill,
         incremental: props.incremental,
+        density: props.density,
       });
       layout.attach();
     });
@@ -90,6 +93,10 @@ export const TagCloud = defineComponent({
     watch(
       () => props.fill,
       (fill) => layout?.setFill(fill),
+    );
+    watch(
+      () => props.density,
+      (density) => layout?.setDensity(density),
     );
     // Re-pack after the DOM reflects the new tags.
     watch(prepared, async () => {
