@@ -41,7 +41,13 @@ export interface LabelPart {
 export interface PreparedTag {
   /** The original item. */
   item: TagCloudItem;
-  /** Stable key: `item.id`, else `item.label`. Render as `data-key`. */
+  /**
+   * Stable, **unique** key: `item.id`, else `item.label`, with `#2`, `#3`, …
+   * appended when several tags would otherwise collide. Render as `data-key`.
+   * Uniqueness matters because adapters use it as a keyed-list key (a
+   * duplicate is a hard error in Svelte) and the layout engine seeds each
+   * tag's scatter from it.
+   */
   key: string;
   /**
    * Sanitized weight (negative / non-finite `item.weight` clamped to 0).
@@ -132,6 +138,18 @@ export function prepareTags(
 ): PreparedTag[] {
   const { minPx = 12, maxPx = 40, minOpacity = 0.62, ariaLabel } = options;
   const weights = items.map((t) => sanitizeWeight(t.weight));
+  // Keys must be unique: adapters use them as keyed-list keys (Svelte throws
+  // `each_key_duplicate` on a collision) and the packer seeds each tag's
+  // scatter from the key, so identical keys would also stack tags on one
+  // anchor. Repeats of an id/label get a `#n` suffix, in input order, so the
+  // result stays deterministic between SSR and hydration.
+  const seen = new Map<string, number>();
+  const keys = items.map((t) => {
+    const base = keyOf(t);
+    const n = (seen.get(base) ?? 0) + 1;
+    seen.set(base, n);
+    return n === 1 ? base : `${base}#${n}`;
+  });
   const maxW = Math.max(1, ...weights);
   const countFactor = Math.min(
     1.1,
@@ -150,7 +168,7 @@ export function prepareTags(
     ).toFixed(2);
     return {
       item: t,
-      key: keyOf(t),
+      key: keys[i],
       weight: w,
       text: t.label,
       parts: labelParts(t.label),

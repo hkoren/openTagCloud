@@ -226,15 +226,15 @@ vite-plugin-solid like your own code.)
 
 ### `TagCloudItem`
 
-| Field    | Type      | Description                                                                                                                                                             |
-| -------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `label`  | `string`  | Text to display. Tags never line-break at hyphens — enforced with no-wrap markup, so the text itself stays untouched (copy/paste and find-in-page see the real string). |
-| `weight` | `number`  | Relative importance — drives font size. Any positive number.                                                                                                            |
-| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.                                                                                             |
-| `id`     | `string?` | Stable identity for the scatter seed + keyed rendering. Defaults to `label`.                                                                                            |
-| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                                                                                                      |
-| `color`  | `string?` | Text color for this tag (any CSS color, incl. `var(--…)`). See [Per-tag color](#per-tag-color).                                                                         |
-| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                                                                                                         |
+| Field    | Type      | Description                                                                                                                                                                                                                   |
+| -------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`  | `string`  | Text to display. Tags never line-break at hyphens — enforced with no-wrap markup, so the text itself stays untouched (copy/paste and find-in-page see the real string).                                                       |
+| `weight` | `number`  | Relative importance — drives font size. Any positive number.                                                                                                                                                                  |
+| `href`   | `string?` | Optional link. When set, the tag renders as an `<a>`, otherwise a `<span>`.                                                                                                                                                   |
+| `id`     | `string?` | Stable identity for the scatter seed + keyed rendering. Defaults to `label`; repeats are made unique automatically (`label`, `label#2`, …). Set `id` when tags can share a label and you need identity stable across updates. |
+| `title`  | `string?` | Tooltip. Defaults to the `weight`.                                                                                                                                                                                            |
+| `color`  | `string?` | Text color for this tag (any CSS color, incl. `var(--…)`). See [Per-tag color](#per-tag-color).                                                                                                                               |
+| `class`  | `string?` | Extra class(es) on the tag element, for custom per-tag styling.                                                                                                                                                               |
 
 ## Sizing
 
