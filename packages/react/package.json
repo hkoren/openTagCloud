@@ -32,11 +32,12 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node ../../scripts/sync-changelog.mjs && tsc -p tsconfig.json",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
