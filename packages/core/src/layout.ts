@@ -418,6 +418,14 @@ export class TagCloudLayout {
       const rows = Math.max(1, Math.ceil(n / cols));
       const cellW = W / cols;
       const cellH = boxH / rows;
+      // Each term spirals out from its anchor. An isotropic spiral grows a
+      // circular front, which reads as a circle floating in a wide box — so
+      // the front is stretched to the box's aspect ratio instead, giving an
+      // ellipse that resembles its container. Area still grows as radius², so
+      // packing tightness is unchanged; only the shape of the growth front is.
+      const shape = Math.sqrt(Math.min(4, Math.max(0.25, aspect)));
+      const spiralX = shape;
+      const spiralY = 1 / shape;
       // Density contracts the anchor grid toward the box centre: at 0 the
       // anchors cover the whole box (even distribution), at 1 they collapse
       // onto the centre so every term spirals out from there and packs as
@@ -488,8 +496,8 @@ export class TagCloudLayout {
         let y = a.y - h / 2;
         let steps = 0;
         while (true) {
-          x = a.x - w / 2 + radius * Math.cos(angle);
-          y = a.y - h / 2 + radius * Math.sin(angle);
+          x = a.x - w / 2 + radius * Math.cos(angle) * spiralX;
+          y = a.y - h / 2 + radius * Math.sin(angle) * spiralY;
           x = Math.max(0, Math.min(x, W - w)); // stay within width
           if (y < 0) y = 0;
           if (!hits(x, y, w, h)) break;
@@ -604,6 +612,11 @@ export class TagCloudLayout {
       3,
       Math.sqrt((W * Math.max(this.#packH, 1)) / Math.max(n, 1)) * 0.12,
     );
+    // Match pack()'s elliptical growth front, or re-placed terms would spiral
+    // in a circle while the rest of the cloud keeps the container's shape.
+    const shape = Math.sqrt(
+      Math.min(4, Math.max(0.25, W / Math.max(this.#packH, 1))),
+    );
     let maxY = 0;
     for (const p of pos) if (p) maxY = Math.max(maxY, p.y);
     for (const idx of toPlace) {
@@ -620,8 +633,8 @@ export class TagCloudLayout {
       let y = ay - h / 2;
       let steps = 0;
       while (true) {
-        x = ax - w / 2 + radius * Math.cos(angle);
-        y = ay - h / 2 + radius * Math.sin(angle);
+        x = ax - w / 2 + radius * Math.cos(angle) * shape;
+        y = ay - h / 2 + (radius * Math.sin(angle)) / shape;
         x = Math.max(0, Math.min(x, W - w));
         if (y < 0) y = 0;
         if (!hits(x, y, w, h)) break;

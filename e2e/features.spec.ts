@@ -345,48 +345,76 @@ test('interactive tags are keyboard-operable buttons and pack like spans (#39)',
   ]);
 });
 
-test('density controls how tightly terms cluster, without ever overlapping (#51)', async ({
+test('density changes the arrangement deterministically, never overlapping (#51)', async ({
   page,
 }) => {
-  // Horizontal extent is the robust measure of clustering: it is what "leaving
-  // space at the outer edges" means, and it separates the extremes widely.
-  //
-  // Deliberately NOT mean distance from the centre or bounding-box area — both
-  // are non-monotonic in density. Collapsing every anchor onto one point makes
-  // a blob whose mean radius and area can EXCEED a moderate spread's, so those
-  // metrics flip order between environments as font metrics shift (this test
-  // failed in CI while passing locally when written against mean radius).
-  const measure = async (density?: number) => {
+  // What is asserted here is deliberately non-directional. Density contracts the
+  // anchor grid toward the centre, but no single rendered number tracks that
+  // monotonically across container shapes, because other parts of the layout
+  // compensate:
+  //   - in a sized container, fit mode scales fonts up until the cloud fills
+  //     the box, so bounding-box area stays ~0.93-1.0 of the container at every
+  //     density;
+  //   - the elliptical growth front spreads a tight cluster across the width;
+  //   - mean radius from the centre is non-monotonic (measured 155, 143, 134,
+  //     129, 134 for density 0..1) — an early version of this test asserted it
+  //     and failed in CI while passing locally.
+  // The tightening is real and visible (ink/bounding-box rose 0.283 -> 0.397
+  // across density 0 -> 1 in a 600x300 box), but it is not a stable single
+  // metric, so this test pins the properties that must always hold instead.
+  const layoutAt = async (density?: number) => {
     const q = density === undefined ? '' : `&density=${density}`;
     await page.goto(`/?n=40&auto${q}`);
     await page.waitForSelector('.otc-cloud.otc-packed');
     await page.waitForTimeout(150);
     const boxes = await getBoxes(page);
     expect(countOverlaps(boxes), `overlaps at density=${density}`).toBe(0);
-    const left = Math.min(...boxes.map((b) => b.x));
-    const right = Math.max(...boxes.map((b) => b.x + b.w));
-    const containerWidth = await page.evaluate(
-      () => document.getElementById('cloud')!.clientWidth,
-    );
-    return { span: right - left, containerWidth };
+    return boxes.map((b) => `${b.key}:${b.x},${b.y}`).join('|');
   };
 
-  const loose = await measure(0);
-  const tight = await measure(1);
+  const loose = await layoutAt(0);
+  const middle = await layoutAt(0.5);
+  const tight = await layoutAt(1);
 
-  // even distribution uses essentially the whole width
-  expect(loose.span).toBeGreaterThan(loose.containerWidth * 0.9);
-  // clustering pulls terms inward, leaving the sides empty
-  expect(tight.span).toBeLessThan(loose.span * 0.85);
+  // density demonstrably changes the arrangement, end to end through the DOM
+  expect(loose).not.toBe(middle);
+  expect(middle).not.toBe(tight);
+  expect(loose).not.toBe(tight);
 
-  // the default is exactly 0.5
-  const def = await measure(undefined);
-  const half = await measure(0.5);
-  expect(def.span).toBe(half.span);
-  // and it sits between the extremes
-  expect(half.span).toBeLessThan(loose.span);
+  // the default is exactly 0.5, and out-of-range values clamp rather than drift
+  expect(await layoutAt(undefined)).toBe(middle);
+  expect(await layoutAt(5)).toBe(tight);
+  expect(await layoutAt(-2)).toBe(loose);
+});
 
-  // out-of-range values clamp rather than throwing or drifting
-  const clamped = await measure(5);
-  expect(clamped.span).toBe(tight.span);
+test("the cloud takes its container's aspect ratio, not a circle (#51 follow-up)", async ({
+  page,
+}) => {
+  // Before the spiral was made elliptical, a 3.6:1 container produced a cloud
+  // of aspect ~1.25 — a circle floating in a wide box. The growth front is now
+  // stretched to the box aspect, so the cloud resembles its container.
+  const aspectIn = async (w: number, h: number) => {
+    await page.goto('/?n=40&density=1');
+    await page.waitForSelector('.otc-cloud.otc-packed');
+    await page.evaluate(([w, h]) => (window as any).setBox(w, h), [w, h]);
+    await page.waitForTimeout(300);
+    const boxes = await getBoxes(page);
+    expect(countOverlaps(boxes), `overlaps in ${w}x${h}`).toBe(0);
+    const span = (get: (b: Box) => [number, number]) => {
+      const lo = Math.min(...boxes.map((b) => get(b)[0]));
+      const hi = Math.max(...boxes.map((b) => get(b)[1]));
+      return hi - lo;
+    };
+    return span((b) => [b.x, b.x + b.w]) / span((b) => [b.y, b.y + b.h]);
+  };
+
+  const wide = await aspectIn(900, 250); // container aspect 3.6
+  const square = await aspectIn(500, 500); // 1.0
+  const tall = await aspectIn(300, 600); // 0.5
+
+  // each cloud is far from circular where its container is, and ordered
+  expect(wide).toBeGreaterThan(2);
+  expect(tall).toBeLessThan(1);
+  expect(wide).toBeGreaterThan(square);
+  expect(square).toBeGreaterThan(tall);
 });
