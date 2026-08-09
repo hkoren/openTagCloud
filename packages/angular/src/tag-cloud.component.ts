@@ -41,7 +41,7 @@ import {
         <a
           [attr.href]="p.href"
           [class]="p.className"
-          [attr.title]="p.title"
+          [attr.title]="p.title ?? null"
           [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
           [attr.data-weight]="p.weight"
@@ -63,7 +63,7 @@ import {
         <button
           type="button"
           [class]="p.className"
-          [attr.title]="p.title"
+          [attr.title]="p.title ?? null"
           [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
           [attr.data-weight]="p.weight"
@@ -84,7 +84,7 @@ import {
       } @else {
         <span
           [class]="p.className"
-          [attr.title]="p.title"
+          [attr.title]="p.title ?? null"
           [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
           [attr.data-weight]="p.weight"

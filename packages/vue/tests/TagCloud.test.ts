@@ -18,7 +18,7 @@ describe('TagCloud (vue)', () => {
       expect(tag.attributes('data-fs')).toMatch(/^\d/);
       expect(tag.attributes('data-weight')).toMatch(/^\d/);
       expect(tag.attributes('data-key')).toBeTruthy();
-      expect(tag.attributes('title')).toBeTruthy();
+      expect(tag.attributes('title')).toBeUndefined(); // no title set on these items (#40)
     }
   });
 

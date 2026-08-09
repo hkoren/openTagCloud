@@ -85,8 +85,12 @@ export interface PreparedTag {
    * when it is undefined.
    */
   href?: string;
-  /** Tooltip text. */
-  title: string;
+  /**
+   * Tooltip text: `item.title` when set, else undefined. The weight is
+   * deliberately *not* used — a bare number ("95") is meaningless to a
+   * visitor. Use `ariaLabel` for the explained form.
+   */
+  title?: string;
   /** Accessible name; set only when the `ariaLabel` option is enabled. */
   ariaLabel?: string;
   /** `"otc-tag"` plus any `item.class`. */
@@ -251,7 +255,7 @@ export function prepareTags(
       parts: labelParts(t.label),
       fontPx,
       opacity,
-      title: t.title ?? String(t.weight),
+      title: t.title,
       ariaLabel: ariaLabel
         ? typeof ariaLabel === 'function'
           ? ariaLabel(t)
