@@ -17,6 +17,7 @@
     ariaLabel,
     fill,
     incremental = false,
+    density,
     onTagClick,
   }: {
     /** The tags to lay out. */
@@ -37,6 +38,8 @@
     ariaLabel?: PrepareOptions['ariaLabel'];
     /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
     incremental?: boolean;
+    /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
+    density?: number;
     /**
      * Called when a tag is activated. Supplying it renders non-link tags as
      * `<button>`, so they are focusable and keyboard-operable.
@@ -58,7 +61,7 @@
   let layout: TagCloudLayout | undefined;
 
   onMount(() => {
-    layout = new TagCloudLayout(root, { fill, incremental });
+    layout = new TagCloudLayout(root, { fill, incremental, density });
     layout.attach();
     return () => layout?.destroy();
   });
@@ -75,6 +78,9 @@
   });
   $effect(() => {
     layout?.setFill(fill);
+  });
+  $effect(() => {
+    layout?.setDensity(density);
   });
 </script>
 

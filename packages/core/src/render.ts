@@ -9,6 +9,8 @@ import { TagCloudLayout } from './layout.js';
 export interface RenderOptions extends PrepareOptions {
   /** Also spread terms vertically to fill the container's height. */
   fill?: Fill;
+  /** How tightly terms cluster, 0–1 (default 0.5). See TagCloudLayoutOptions. */
+  density?: number;
   /**
    * Called when a tag is activated (click, or keyboard on a `<button>`).
    * Supplying it renders non-link tags as buttons, so they are focusable and
@@ -24,6 +26,8 @@ export interface RenderOptions extends PrepareOptions {
 export interface TagCloudHandle {
   /** Replace the items and re-pack. */
   update(items: TagCloudItem[]): void;
+  /** Change the clustering density (0–1) and re-pack. */
+  setDensity(density: number | undefined): void;
   /** Force a re-pack (e.g. after external style changes). */
   repack(): void;
   /** Change the fill mode. */
@@ -120,6 +124,9 @@ export function renderTagCloud(
     },
     setFill(fill) {
       layout.setFill(fill);
+    },
+    setDensity(density) {
+      layout.setDensity(density);
     },
     destroy() {
       layout.destroy();

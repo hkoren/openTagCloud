@@ -152,7 +152,10 @@ test('non-incremental refresh reshuffles (control for #7)', async ({
 test('fit mode fills an externally sized container with larger type (#16)', async ({
   page,
 }) => {
-  await page.goto('/?n=24');
+  // density=0 (even distribution) is the setting this guarantee is about:
+  // clustering deliberately trades container fill for a tighter cloud, so at
+  // the default 0.5 the box is intentionally not filled edge to edge (#51).
+  await page.goto('/?n=24&density=0');
   await page.waitForSelector('.otc-cloud.otc-packed');
   const { packH, boxH, avgFont } = await page.evaluate(() => {
     const cloud = document.getElementById('cloud') as HTMLElement;
@@ -340,4 +343,50 @@ test('interactive tags are keyboard-operable buttons and pack like spans (#39)',
   expect(await page.evaluate(() => (window as any).clicks)).toEqual([
     focused.key,
   ]);
+});
+
+test('density controls how tightly terms cluster, without ever overlapping (#51)', async ({
+  page,
+}) => {
+  // Mean distance from the cloud's centre measures clustering directly.
+  const spreadFor = async (density?: number) => {
+    const q = density === undefined ? '' : `&density=${density}`;
+    await page.goto(`/?n=40&auto${q}`);
+    await page.waitForSelector('.otc-cloud.otc-packed');
+    await page.waitForTimeout(150);
+    const boxes = await getBoxes(page);
+    expect(countOverlaps(boxes)).toBe(0);
+    const cx = Math.max(...boxes.map((b) => b.x + b.w)) / 2;
+    const cy = Math.max(...boxes.map((b) => b.y + b.h)) / 2;
+    const mean =
+      boxes.reduce(
+        (sum, b) => sum + Math.hypot(b.x + b.w / 2 - cx, b.y + b.h / 2 - cy),
+        0,
+      ) / boxes.length;
+    const packH = await page.evaluate(() =>
+      parseFloat(
+        (document.getElementById('cloud') as HTMLElement).style.minHeight,
+      ),
+    );
+    return { mean, packH };
+  };
+
+  const loose = await spreadFor(0);
+  const middle = await spreadFor(0.5);
+  const tight = await spreadFor(1);
+
+  // higher density → terms sit closer to the centre
+  expect(tight.mean).toBeLessThan(middle.mean);
+  expect(middle.mean).toBeLessThan(loose.mean);
+
+  // the default matches 0.5 exactly
+  const def = await spreadFor(undefined);
+  expect(def.mean).toBeCloseTo(middle.mean, 5);
+
+  // Note: a tighter cloud is not a *shorter* one in an auto-height container —
+  // collapsing anchors onto the centre makes a compact blob whose height grows
+  // because width is bounded. Clustering is measured above, by distance from
+  // the centre; height is not a proxy for it.
+  const clamped = await spreadFor(5);
+  expect(clamped.mean).toBeCloseTo(tight.mean, 5);
 });

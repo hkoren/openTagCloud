@@ -11,6 +11,17 @@ export interface TagCloudLayoutOptions {
    */
   injectStyles?: boolean;
   /**
+   * How tightly terms cluster, 0–1 (default 0.5).
+   *
+   * The packer seeds each term at an anchor point and spirals it out from
+   * there. `density` scales how far those anchors spread from the container's
+   * centre: at `0` they cover the full grid, so terms are distributed evenly
+   * across the box; at `1` they collapse onto the centre, so terms pack as
+   * tightly as they can without overlapping and the outer corners are left
+   * empty. Values in between interpolate.
+   */
+  density?: number;
+  /**
    * Keep unchanged tags in place when `refresh()` runs after an item update:
    * tags whose measured box still fits at its old position stay put; only
    * new, resized, or displaced tags are re-placed (seeded from their old
@@ -25,6 +36,12 @@ export interface TagCloudLayoutOptions {
 export const PAD = 5;
 /** @internal Area slack factor used to derive the packing box height. */
 export const LOOSEN = 1.4;
+
+/** @internal Clamp a caller-supplied density to [0, 1], defaulting to 0.5. */
+export function clampDensity(density: number | undefined): number {
+  if (density == null || !Number.isFinite(density)) return 0.5;
+  return Math.min(1, Math.max(0, density));
+}
 
 /** @internal container width → font: shrink on narrow (mobile), grow modestly when wide. */
 export const widthFactor = (w: number): number =>
@@ -99,6 +116,7 @@ export class TagCloudLayout {
   #fill?: Fill;
   #injectStyles: boolean;
   #incremental: boolean;
+  #density: number;
   #lastW = -1;
   #lastH = -1;
   // packed base layout (natural top-left of each term) + its natural height;
@@ -123,6 +141,7 @@ export class TagCloudLayout {
     this.#fill = options.fill;
     this.#injectStyles = options.injectStyles ?? true;
     this.#incremental = options.incremental ?? false;
+    this.#density = clampDensity(options.density);
   }
 
   get #fillH(): boolean {
@@ -174,6 +193,14 @@ export class TagCloudLayout {
     if (typeof window === 'undefined' || this.#destroyed) return;
     if (this.#incremental && this.#tryIncremental()) return;
     this.pack();
+  }
+
+  /** Change the clustering density (0–1) and re-pack. */
+  setDensity(density: number | undefined): void {
+    const next = clampDensity(density);
+    if (next === this.#density) return;
+    this.#density = next;
+    if (typeof window !== 'undefined' && !this.#destroyed) this.pack();
   }
 
   /** Change the fill mode; only term positions move, never the container height. */
@@ -391,10 +418,21 @@ export class TagCloudLayout {
       const rows = Math.max(1, Math.ceil(n / cols));
       const cellW = W / cols;
       const cellH = boxH / rows;
+      // Density contracts the anchor grid toward the box centre: at 0 the
+      // anchors cover the whole box (even distribution), at 1 they collapse
+      // onto the centre so every term spirals out from there and packs as
+      // tightly as overlap allows. The spiral itself is unchanged, so terms
+      // still never overlap — only their starting points move.
+      const spread = 1 - this.#density;
+      const gx = W / 2;
+      const gy = boxH / 2;
       const cells: { x: number; y: number }[] = [];
       for (let r = 0; r < rows; r++)
         for (let c = 0; c < cols; c++)
-          cells.push({ x: (c + 0.5) * cellW, y: (r + 0.5) * cellH });
+          cells.push({
+            x: gx + ((c + 0.5) * cellW - gx) * spread,
+            y: gy + ((r + 0.5) * cellH - gy) * spread,
+          });
 
       // order cells farthest-point-first from the box centre, so the heaviest
       // term lands centrally and the next-heaviest spread out to fill/corners.

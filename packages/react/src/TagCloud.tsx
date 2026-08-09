@@ -33,6 +33,8 @@ export interface TagCloudProps {
   fill?: Fill;
   /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
   incremental?: boolean;
+  /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
+  density?: number;
   /**
    * Called when a tag is activated. Supplying it renders non-link tags as
    * `<button>`, so they are focusable and keyboard-operable.
@@ -79,6 +81,7 @@ export function TagCloud({
   ariaLabel,
   fill,
   incremental = false,
+  density,
   onTagClick,
   className,
 }: TagCloudProps) {
@@ -97,7 +100,7 @@ export function TagCloud({
   );
 
   useEffect(() => {
-    const l = new TagCloudLayout(root.current!, { fill, incremental });
+    const l = new TagCloudLayout(root.current!, { fill, incremental, density });
     layout.current = l;
     l.attach();
     return () => {
@@ -111,6 +114,10 @@ export function TagCloud({
   useEffect(() => {
     layout.current?.setFill(fill);
   }, [fill]);
+
+  useEffect(() => {
+    layout.current?.setDensity(density);
+  }, [density]);
 
   // Re-pack when the rendered tags change; attach() already packed the initial set.
   const firstRun = useRef(true);

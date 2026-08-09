@@ -222,6 +222,7 @@ vite-plugin-solid like your own code.)
 | `fill`        | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                                                                                                                                             |
 | `minOpacity`  | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.                                                                                                                                |
 | `ariaLabel`   | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n.                                                                                                                             |
+| `density`     | `number`                        | `0.5`   | How tightly terms cluster, 0–1. `0` distributes them evenly across the container; `1` packs them as tightly as possible around the centre, leaving the corners empty.                                                                                                   |
 | `incremental` | `boolean`                       | `false` | Keep unchanged tags in place across item updates — only new/changed tags move (great for live data). Falls back to a full re-pack on width changes or heavy churn.                                                                                                      |
 | `onTagClick`  | `(item, event) => void`         | —       | Called when a tag is activated. Supplying it renders non-link tags as `<button type="button">`, so they are focusable and keyboard-operable; links still fire it, so you can `preventDefault()` for client-side routing. Angular exposes this as the `tagClick` output. |
 
@@ -313,6 +314,23 @@ global rule against the tag class:
   font-style: italic;
 }
 ```
+
+## Density
+
+`density` (0–1, default `0.5`) controls how tightly terms cluster. The packer
+seeds each term at an anchor point and spirals it out from there; density scales
+how far those anchors spread from the container's centre:
+
+- **`0`** — anchors cover the whole box, so terms are distributed evenly across
+  it. This is the setting that fills a sized container edge to edge.
+- **`1`** — anchors collapse onto the centre, so terms pack as tightly as
+  overlap allows and the outer corners are left empty.
+- **`0.5`** (default) — in between.
+
+Terms never overlap at any density; only their starting points move. Note the
+tradeoff: raising density deliberately trades container fill for a tighter
+cloud, so a clustered cloud can be taller than an evenly distributed one in an
+auto-height container, and will not reach the edges of a sized one.
 
 ## Handling clicks
 
