@@ -1,6 +1,12 @@
 import type { TagCloudItem } from './types.js';
 
 export interface PrepareOptions {
+  /**
+   * Render non-link tags as `<button type="button">` instead of `<span>`.
+   * Adapters set this when a click handler is supplied, so activatable tags
+   * are focusable and keyboard-operable rather than mouse-only spans.
+   */
+  interactive?: boolean;
   /** Font size (px) of the lightest tag. */
   minPx?: number;
   /** Font size (px) of the heaviest tag. */
@@ -67,6 +73,11 @@ export interface PreparedTag {
   fontPx: number;
   /** Weight-derived opacity (lighter tags fade back). */
   opacity: number;
+  /**
+   * Which element to render: `'a'` when the tag links somewhere, `'button'`
+   * for an activatable tag (see the `interactive` option), else `'span'`.
+   */
+  tag: 'a' | 'button' | 'span';
   /**
    * The link target, **validated**: `item.href` when its scheme is safe,
    * otherwise undefined (unsafe schemes such as `javascript:` are dropped).
@@ -192,7 +203,13 @@ export function prepareTags(
   items: TagCloudItem[],
   options: PrepareOptions = {},
 ): PreparedTag[] {
-  const { minPx = 12, maxPx = 40, minOpacity = 0.62, ariaLabel } = options;
+  const {
+    minPx = 12,
+    maxPx = 40,
+    minOpacity = 0.62,
+    ariaLabel,
+    interactive = false,
+  } = options;
   const weights = items.map((t) => sanitizeWeight(t.weight));
   // Keys must be unique: adapters use them as keyed-list keys (Svelte throws
   // `each_key_duplicate` on a collision) and the packer seeds each tag's
@@ -223,10 +240,12 @@ export function prepareTags(
       Math.pow(w / maxW, 0.8) * (1 - minOpacity)
     ).toFixed(2);
     const color = sanitizeColor(t.color);
+    const href = sanitizeHref(t.href);
     return {
       item: t,
       key: keys[i],
-      href: sanitizeHref(t.href),
+      tag: href ? 'a' : interactive ? 'button' : 'span',
+      href,
       weight: w,
       text: t.label,
       parts: labelParts(t.label),

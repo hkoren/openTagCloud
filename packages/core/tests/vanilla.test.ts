@@ -49,6 +49,53 @@ describe('mount (vanilla compat)', () => {
   });
 });
 
+describe('renderTagCloud click handling (#39)', () => {
+  it('renders buttons, fires the handler, and unbinds on destroy', async () => {
+    const { renderTagCloud } = await import('../src/index.js');
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const clicks: string[] = [];
+    const handle = renderTagCloud(container, items, {
+      onTagClick: (i) => clicks.push(i.label),
+    });
+
+    // non-link tags become real buttons; links stay links
+    const button = container.querySelector('button.otc-tag') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('type')).toBe('button');
+    expect(container.querySelector('a.otc-tag')).toBeTruthy();
+
+    button.click();
+    expect(clicks).toEqual(['Rust']);
+
+    // links fire it too, so callers can preventDefault for routing
+    (container.querySelector('a.otc-tag') as HTMLElement).click();
+    expect(clicks).toEqual(['Rust', 'JavaScript']);
+
+    // a click inside the nowrap span still resolves to its tag (delegation)
+    clicks.length = 0;
+    handle.update([{ label: 'tag-cloud', weight: 5 }]);
+    (container.querySelector('.otc-nb') as HTMLElement).click();
+    expect(clicks).toEqual(['tag-cloud']);
+
+    handle.destroy();
+    container.remove();
+  });
+
+  it('stays spans when no handler is given', async () => {
+    const { renderTagCloud } = await import('../src/index.js');
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const handle = renderTagCloud(container, items);
+    expect(container.querySelector('button.otc-tag')).toBeNull();
+    expect(container.querySelectorAll('span.otc-tag').length).toBeGreaterThan(
+      0,
+    );
+    handle.destroy();
+    container.remove();
+  });
+});
+
 describe('defineElement (<otc-tag-cloud>)', () => {
   it('registers once, renders JSON attribute items, honors the items property', () => {
     defineElement();

@@ -65,6 +65,26 @@ describe('TagCloud (react)', () => {
     );
   });
 
+  it('renders buttons and fires onTagClick (#39)', () => {
+    const clicked: string[] = [];
+    const { container } = render(
+      <TagCloud items={items} onTagClick={(i) => clicked.push(i.label)} />,
+    );
+    const button = container.querySelector('button.otc-tag') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('type')).toBe('button');
+    button.click();
+    expect(clicked).toHaveLength(1);
+    expect(container.querySelector('a.otc-tag')?.getAttribute('href')).toBe(
+      '/js',
+    );
+  });
+
+  it('renders spans when no handler is given', () => {
+    const { container } = render(<TagCloud items={items} />);
+    expect(container.querySelector('button.otc-tag')).toBeNull();
+  });
+
   it('mounts and unmounts without leaking listeners or throwing', () => {
     const { unmount } = render(<TagCloud items={items} />);
     expect(unmount).not.toThrow();

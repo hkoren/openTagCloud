@@ -97,6 +97,23 @@ describe('prepareTags', () => {
     expect(again.map((p) => p.key)).toEqual(['Java', 'Java#2']);
   });
 
+  it('chooses the element per tag, and only buttons when interactive (#39)', () => {
+    const items = [item('link', 1, { href: '/x' }), item('plain', 1)];
+    expect(prepareTags(items).map((p) => p.tag)).toEqual(['a', 'span']);
+    expect(prepareTags(items, { interactive: true }).map((p) => p.tag)).toEqual(
+      ['a', 'button'],
+    );
+    // an unsafe href must not become a link, but may still be activatable
+    const [unsafe] = prepareTags(
+      [item('x', 1, { href: 'javascript:alert(1)' })],
+      {
+        interactive: true,
+      },
+    );
+    expect(unsafe.tag).toBe('button');
+    expect(unsafe.href).toBeUndefined();
+  });
+
   it('keys by id, falling back to label', () => {
     expect(keyOf({ label: 'a', weight: 1 })).toBe('a');
     expect(keyOf({ label: 'a', weight: 1, id: 'x' })).toBe('x');

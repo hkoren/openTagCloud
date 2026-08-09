@@ -214,15 +214,16 @@ vite-plugin-solid like your own code.)
 
 ## Props (identical across adapters)
 
-| Prop          | Type                            | Default | Description                                                                                                                                                        |
-| ------------- | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `items`       | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                                                                                                                 |
-| `minPx`       | `number`                        | `12`    | Font size (px) of the lightest tag.                                                                                                                                |
-| `maxPx`       | `number`                        | `40`    | Font size (px) of the heaviest tag.                                                                                                                                |
-| `fill`        | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                                        |
-| `minOpacity`  | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.                           |
-| `ariaLabel`   | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n.                        |
-| `incremental` | `boolean`                       | `false` | Keep unchanged tags in place across item updates — only new/changed tags move (great for live data). Falls back to a full re-pack on width changes or heavy churn. |
+| Prop          | Type                            | Default | Description                                                                                                                                                                                                                                                             |
+| ------------- | ------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`       | `TagCloudItem[]`                | —       | The tags to lay out. **Required.**                                                                                                                                                                                                                                      |
+| `minPx`       | `number`                        | `12`    | Font size (px) of the lightest tag.                                                                                                                                                                                                                                     |
+| `maxPx`       | `number`                        | `40`    | Font size (px) of the heaviest tag.                                                                                                                                                                                                                                     |
+| `fill`        | `'width' \| 'height' \| 'both'` | —       | Spread terms to also fill the container's **height** (e.g. a grid sibling).                                                                                                                                                                                             |
+| `minOpacity`  | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.                                                                                                                                |
+| `ariaLabel`   | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n.                                                                                                                             |
+| `incremental` | `boolean`                       | `false` | Keep unchanged tags in place across item updates — only new/changed tags move (great for live data). Falls back to a full re-pack on width changes or heavy churn.                                                                                                      |
+| `onTagClick`  | `(item, event) => void`         | —       | Called when a tag is activated. Supplying it renders non-link tags as `<button type="button">`, so they are focusable and keyboard-operable; links still fire it, so you can `preventDefault()` for client-side routing. Angular exposes this as the `tagClick` output. |
 
 ### `TagCloudItem`
 
@@ -312,6 +313,21 @@ global rule against the tag class:
   font-style: italic;
 }
 ```
+
+## Handling clicks
+
+A tag with an `href` is a link. For anything else — filtering a list, opening a
+drawer, dispatching to a router — pass `onTagClick`:
+
+```svelte
+<TagCloud {items} onTagClick={(item) => filterBy(item.label)} />
+```
+
+Non-link tags then render as `<button type="button">` rather than `<span>`, so
+they are keyboard-operable and announced correctly, with no visual change (the
+stylesheet neutralizes the button chrome). Links still fire the callback, so
+`event.preventDefault()` lets you take over navigation. Without the callback
+nothing becomes focusable, keeping display-only clouds unchanged.
 
 ## Accessibility
 

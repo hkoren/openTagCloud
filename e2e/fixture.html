@@ -47,12 +47,17 @@
           ? `${longNames[i % longNames.length]}${Math.floor(i / longNames.length) || ''}`
           : `tag${i}`,
         weight: ((i * 37) % 100) + 1,
-        href: `#t${i}`,
+        href: params.has('click') ? undefined : `#t${i}`,
       }));
 
+      window.clicks = [];
       window.cloud = renderTagCloud(document.getElementById('cloud'), items, {
         fill,
         incremental,
+        // ?click makes non-link tags buttons and records activations
+        onTagClick: params.has('click')
+          ? (item) => window.clicks.push(item.label)
+          : undefined,
       });
       if (params.has('unsafe')) {
         // attacker-shaped tag data: a script URL and a color that tries to

@@ -75,6 +75,27 @@ describe('TagCloudComponent (angular)', () => {
     expect(host.querySelectorAll('.otc-tag')).toHaveLength(1);
   });
 
+  it('renders buttons and emits tagClick when subscribed (#39)', () => {
+    const clicked: string[] = [];
+    fixture.componentInstance.tagClick.subscribe((e) =>
+      clicked.push(e.item.label),
+    );
+    fixture.componentRef.setInput('items', [...items]);
+    fixture.detectChanges();
+
+    const button = host.querySelector('button.otc-tag') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('type')).toBe('button');
+    button.click();
+    expect(clicked).toHaveLength(1);
+    expect(host.querySelector('a.otc-tag')?.getAttribute('href')).toBe('/js');
+  });
+
+  it('renders spans when nothing is subscribed', () => {
+    expect(host.querySelector('button.otc-tag')).toBeNull();
+    expect(host.querySelectorAll('span.otc-tag').length).toBeGreaterThan(0);
+  });
+
   it('destroys cleanly', () => {
     expect(() => fixture.destroy()).not.toThrow();
   });

@@ -42,6 +42,27 @@ describe('TagCloud (vue)', () => {
     expect(wrapper.findAll('.otc-tag')).toHaveLength(1);
   });
 
+  it('renders buttons and fires onTagClick (#39)', async () => {
+    const clicked: string[] = [];
+    const wrapper = mount(TagCloud, {
+      props: {
+        items,
+        onTagClick: (i: { label: string }) => clicked.push(i.label),
+      },
+    });
+    const button = wrapper.find('button.otc-tag');
+    expect(button.exists()).toBe(true);
+    expect(button.attributes('type')).toBe('button');
+    await button.trigger('click');
+    expect(clicked).toHaveLength(1);
+    expect(wrapper.find('a.otc-tag').attributes('href')).toBe('/js');
+  });
+
+  it('renders spans when no handler is given', () => {
+    const wrapper = mount(TagCloud, { props: { items } });
+    expect(wrapper.find('button.otc-tag').exists()).toBe(false);
+  });
+
   it('mounts and unmounts without throwing', () => {
     const wrapper = mount(TagCloud, { props: { items } });
     expect(() => wrapper.unmount()).not.toThrow();

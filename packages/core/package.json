@@ -46,7 +46,7 @@
     "./dist/opentagcloud.vanilla.js"
   ],
   "scripts": {
-    "build": "node ../../scripts/sync-root-files.mjs && tsc -p tsconfig.json && node scripts/emit-css.mjs && esbuild src/umd.ts --bundle --format=iife --global-name=openTagCloud --outfile=dist/opentagcloud.vanilla.js --banner:js=\"/* openTagCloud — script-tag build. window.openTagCloud.{mount,defineElement,renderTagCloud,...}; registers <otc-tag-cloud> automatically. Generated from src/umd.ts. */\"",
+    "build": "node ../../scripts/sync-root-files.mjs && tsc -p tsconfig.json && node ../../scripts/check-emit.mjs dist && node scripts/emit-css.mjs && esbuild src/umd.ts --bundle --format=iife --global-name=openTagCloud --outfile=dist/opentagcloud.vanilla.js --banner:js=\"/* openTagCloud — script-tag build. window.openTagCloud.{mount,defineElement,renderTagCloud,...}; registers <otc-tag-cloud> automatically. Generated from src/umd.ts. */\"",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
