@@ -95,11 +95,11 @@ export const TagCloud = defineComponent({
         { class: 'otc-cloud', ref: root },
         prepared.value.map((p) =>
           h(
-            p.item.href ? 'a' : 'span',
+            p.href ? 'a' : 'span',
             {
               key: p.key,
               class: p.className,
-              href: p.item.href,
+              href: p.href,
               title: p.title,
               'aria-label': p.ariaLabel,
               style: p.style,

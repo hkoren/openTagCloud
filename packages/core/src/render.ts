@@ -34,9 +34,9 @@ export function createTagElement(
   p: PreparedTag,
   doc: Document = document,
 ): HTMLElement {
-  const el = doc.createElement(p.item.href ? 'a' : 'span');
+  const el = doc.createElement(p.href ? 'a' : 'span');
   el.className = p.className;
-  if (p.item.href) (el as HTMLAnchorElement).href = p.item.href;
+  if (p.href) (el as HTMLAnchorElement).href = p.href;
   el.setAttribute('style', p.style);
   el.title = p.title;
   if (p.ariaLabel) el.setAttribute('aria-label', p.ariaLabel);

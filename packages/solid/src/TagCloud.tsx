@@ -99,10 +99,10 @@ export function TagCloud(props: TagCloudProps) {
     >
       <For each={prepared()}>
         {(p) =>
-          p.item.href ? (
+          p.href ? (
             <a
               class={p.className}
-              href={p.item.href}
+              href={p.href}
               title={p.title}
               aria-label={p.ariaLabel}
               style={p.style}

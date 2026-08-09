@@ -7,6 +7,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All packages in the monorepo share a version and are released together.
 Each entry links to its GitHub release, which carries the fuller narrative.
 
+## Unreleased
+
+### Security
+
+- `item.href` is validated: only relative URLs and safe schemes (`http`,
+  `https`, `mailto`, `tel`, `ftp`, `sms`) become links. `javascript:`, `data:`
+  and friends — including whitespace/control-character obfuscations like
+  `java\tscript:` — are dropped and the tag renders as text ([#36]).
+- `item.color` is validated against the characters CSS colors legitimately
+  need, so a value like `red;background-image:url(//evil.test/p.png)` can no
+  longer append its own declaration to the inline style ([#35]).
+
+### Fixed
+
+- Tag keys are de-duplicated (`Java`, `Java#2`, …), fixing a hard
+  `each_key_duplicate` crash in the Svelte adapter when two tags shared a label
+  ([#37]).
+- Published packages now contain the MIT `LICENSE` file, which every package
+  declared but none shipped ([#38]).
+
 ## [0.4.2] — 2026-08-08
 
 First release published entirely through npm
@@ -131,3 +151,7 @@ installed directly from GitHub.
 [0.4.1]: https://github.com/hkoren/openTagCloud/releases/tag/v0.4.1
 [0.4.0]: https://github.com/hkoren/openTagCloud/releases/tag/v0.4.0
 [0.3.0]: https://www.npmjs.com/package/opentagcloud/v/0.3.0
+[#35]: https://github.com/hkoren/openTagCloud/issues/35
+[#36]: https://github.com/hkoren/openTagCloud/issues/36
+[#37]: https://github.com/hkoren/openTagCloud/issues/37
+[#38]: https://github.com/hkoren/openTagCloud/issues/38

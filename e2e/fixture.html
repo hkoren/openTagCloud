@@ -54,6 +54,19 @@
         fill,
         incremental,
       });
+      if (params.has('unsafe')) {
+        // attacker-shaped tag data: a script URL and a color that tries to
+        // append its own declaration (see #35/#36)
+        window.cloud.update([
+          ...items.slice(0, 3),
+          { label: 'evil', weight: 60, href: 'javascript:window.__pwned=1' },
+          {
+            label: 'leak',
+            weight: 50,
+            color: 'red;background-image:url(/__exfil.png)',
+          },
+        ]);
+      }
       window.estimate = (w) => estimateCloudHeight(items, w);
       window.addOne = () =>
         window.cloud.update([...items, { label: 'newcomer', weight: 50 }]);
