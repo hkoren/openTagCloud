@@ -69,6 +69,26 @@ describe('TagCloud (solid)', () => {
     ).toBe('JavaScript, weight 95');
   });
 
+  it('renders buttons and fires onTagClick (#39)', () => {
+    const clicked: string[] = [];
+    mount(() => (
+      <TagCloud items={items} onTagClick={(i) => clicked.push(i.label)} />
+    ));
+    const button = container.querySelector('button.otc-tag') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('type')).toBe('button');
+    button.click();
+    expect(clicked).toHaveLength(1);
+    expect(container.querySelector('a.otc-tag')?.getAttribute('href')).toBe(
+      '/js',
+    );
+  });
+
+  it('renders spans when no handler is given', () => {
+    mount(() => <TagCloud items={items} />);
+    expect(container.querySelector('button.otc-tag')).toBeNull();
+  });
+
   it('updates the rendered tags when items change', () => {
     const [list, setList] = createSignal(items);
     mount(() => <TagCloud items={list()} />);

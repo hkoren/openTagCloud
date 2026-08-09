@@ -1,4 +1,6 @@
 import {
+  EventEmitter,
+  Output,
   AfterViewChecked,
   AfterViewInit,
   Component,
@@ -35,10 +37,10 @@ import {
   host: { class: 'otc-cloud' },
   template: `
     @for (p of prepared; track p.key) {
-      @if (p.href) {
+      @if (p.tag === 'a') {
         <a
-          [class]="p.className"
           [attr.href]="p.href"
+          [class]="p.className"
           [attr.title]="p.title"
           [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"
@@ -47,6 +49,7 @@ import {
           [style.font-size.px]="p.fontPx"
           [style.opacity]="p.opacity"
           [style.--otc-tag-color]="p.item.color ?? null"
+          (click)="tagClick.emit({ item: p.item, event: $event })"
         >
           @for (part of p.parts; track $index) {
             @if (part.nowrap) {
@@ -56,6 +59,28 @@ import {
             }
           }
         </a>
+      } @else if (p.tag === 'button') {
+        <button
+          type="button"
+          [class]="p.className"
+          [attr.title]="p.title"
+          [attr.aria-label]="p.ariaLabel ?? null"
+          [attr.data-fs]="p.fontPx"
+          [attr.data-weight]="p.weight"
+          [attr.data-key]="p.key"
+          [style.font-size.px]="p.fontPx"
+          [style.opacity]="p.opacity"
+          [style.--otc-tag-color]="p.item.color ?? null"
+          (click)="tagClick.emit({ item: p.item, event: $event })"
+        >
+          @for (part of p.parts; track $index) {
+            @if (part.nowrap) {
+              <span class="otc-nb">{{ part.text }}</span>
+            } @else {
+              <ng-container>{{ part.text }}</ng-container>
+            }
+          }
+        </button>
       } @else {
         <span
           [class]="p.className"
@@ -67,6 +92,7 @@ import {
           [style.font-size.px]="p.fontPx"
           [style.opacity]="p.opacity"
           [style.--otc-tag-color]="p.item.color ?? null"
+          (click)="tagClick.emit({ item: p.item, event: $event })"
         >
           @for (part of p.parts; track $index) {
             @if (part.nowrap) {
@@ -97,6 +123,14 @@ export class TagCloudComponent
   @Input() ariaLabel?: PrepareOptions['ariaLabel'];
   /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
   @Input() incremental = false;
+  /**
+   * Emitted when a tag is activated. Subscribing renders non-link tags as
+   * `<button>`, so they are focusable and keyboard-operable.
+   */
+  @Output() readonly tagClick = new EventEmitter<{
+    item: TagCloudItem;
+    event: MouseEvent;
+  }>();
 
   protected prepared: PreparedTag[] = [];
   private layout?: TagCloudLayout;
@@ -117,6 +151,8 @@ export class TagCloudComponent
         maxPx: this.maxPx,
         minOpacity: this.minOpacity,
         ariaLabel: this.ariaLabel,
+        // `observed` is true once a consumer binds (tagClick)
+        interactive: this.tagClick.observed,
       });
       // Re-pack once the view reflects the new tags (attach() packs the initial set).
       this.needsRefresh = !!this.layout;

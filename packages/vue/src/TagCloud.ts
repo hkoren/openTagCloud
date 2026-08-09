@@ -53,6 +53,13 @@ export const TagCloud = defineComponent({
     },
     /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
     incremental: { type: Boolean, default: false },
+    /** Called when a tag is activated; renders non-link tags as buttons. */
+    onTagClick: {
+      type: Function as PropType<
+        (item: TagCloudItem, event: MouseEvent) => void
+      >,
+      default: undefined,
+    },
   },
   setup(props) {
     const root = ref<HTMLElement>();
@@ -64,6 +71,7 @@ export const TagCloud = defineComponent({
         maxPx: props.maxPx,
         minOpacity: props.minOpacity,
         ariaLabel: props.ariaLabel,
+        interactive: !!props.onTagClick,
       }),
     );
 
@@ -95,11 +103,15 @@ export const TagCloud = defineComponent({
         { class: 'otc-cloud', ref: root },
         prepared.value.map((p) =>
           h(
-            p.href ? 'a' : 'span',
+            p.tag,
             {
               key: p.key,
               class: p.className,
               href: p.href,
+              type: p.tag === 'button' ? 'button' : undefined,
+              onClick: props.onTagClick
+                ? (e: MouseEvent) => props.onTagClick!(p.item, e)
+                : undefined,
               title: p.title,
               'aria-label': p.ariaLabel,
               style: p.style,

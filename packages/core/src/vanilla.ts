@@ -10,6 +10,8 @@ import { renderTagCloud } from './render.js';
 export interface MountOptions extends PrepareOptions {
   /** Spread terms to fill a taller container. */
   fill?: Fill;
+  /** Called when a tag is activated; renders non-link tags as buttons. */
+  onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
   /** Keep unchanged tags in place across `update()` calls (see TagCloudLayoutOptions). */
   incremental?: boolean;
 }

@@ -33,6 +33,11 @@ export interface TagCloudProps {
   fill?: Fill;
   /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
   incremental?: boolean;
+  /**
+   * Called when a tag is activated. Supplying it renders non-link tags as
+   * `<button>`, so they are focusable and keyboard-operable.
+   */
+  onTagClick?: (item: TagCloudItem, event: React.MouseEvent) => void;
   /** Extra class(es) on the cloud container. */
   className?: string;
 }
@@ -74,13 +79,21 @@ export function TagCloud({
   ariaLabel,
   fill,
   incremental = false,
+  onTagClick,
   className,
 }: TagCloudProps) {
   const root = useRef<HTMLDivElement>(null);
   const layout = useRef<TagCloudLayout | null>(null);
   const prepared = useMemo(
-    () => prepareTags(items, { minPx, maxPx, minOpacity, ariaLabel }),
-    [items, minPx, maxPx, minOpacity, ariaLabel],
+    () =>
+      prepareTags(items, {
+        minPx,
+        maxPx,
+        minOpacity,
+        ariaLabel,
+        interactive: !!onTagClick,
+      }),
+    [items, minPx, maxPx, minOpacity, ariaLabel, onTagClick],
   );
 
   useEffect(() => {
@@ -114,36 +127,26 @@ export function TagCloud({
       ref={root}
       className={className ? `otc-cloud ${className}` : 'otc-cloud'}
     >
-      {prepared.map((p) =>
-        p.href ? (
-          <a
+      {prepared.map((p) => {
+        const El = p.tag;
+        return (
+          <El
             key={p.key}
             className={p.className}
-            href={p.href}
+            {...(p.href ? { href: p.href } : {})}
+            {...(p.tag === 'button' ? { type: 'button' as const } : {})}
             title={p.title}
             aria-label={p.ariaLabel}
             style={tagStyle(p)}
             data-fs={p.fontPx}
             data-weight={p.weight}
             data-key={p.key}
+            onClick={onTagClick ? (e) => onTagClick(p.item, e) : undefined}
           >
             {tagContent(p)}
-          </a>
-        ) : (
-          <span
-            key={p.key}
-            className={p.className}
-            title={p.title}
-            aria-label={p.ariaLabel}
-            style={tagStyle(p)}
-            data-fs={p.fontPx}
-            data-weight={p.weight}
-            data-key={p.key}
-          >
-            {tagContent(p)}
-          </span>
-        ),
-      )}
+          </El>
+        );
+      })}
     </div>
   );
 }

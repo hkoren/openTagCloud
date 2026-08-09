@@ -22,6 +22,32 @@ export const TAG_CLOUD_CSS = `.otc-cloud {
   hyphens: none;
   text-decoration: none;
 }
+/* A tag rendered as <button> (interactive mode) must look identical to a
+   span — the element is chosen for keyboard/AT semantics, not appearance. */
+button.otc-tag {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  /* Individual properties rather than the font shorthand: "font: inherit"
+     also resets line-height, which would override .otc-tag's 0.95 and make
+     button tags measure taller than spans — changing the packed layout. */
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  line-height: 0.95;
+}
+a.otc-tag:hover,
+a.otc-tag:focus-visible,
+button.otc-tag:hover,
+button.otc-tag:focus-visible {
+  color: var(--otc-tag-color, var(--otc-hover-color, #2563eb));
+  opacity: 1 !important;
+  text-decoration: none;
+}
 /* Hyphenated words are wrapped in .otc-nb so lines never break at a hyphen
    (the DOM text itself stays untouched — see prepareTags' label parts). */
 .otc-tag .otc-nb {
@@ -37,9 +63,28 @@ export const TAG_CLOUD_CSS = `.otc-cloud {
         transform var(--otc-move-transition, 250ms cubic-bezier(0.22, 1, 0.36, 1));
   }
 }
+/* A tag rendered as <button> (interactive mode) must look identical to a
+   span — the element is chosen for keyboard/AT semantics, not appearance. */
+button.otc-tag {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  /* Individual properties rather than the font shorthand: "font: inherit"
+     also resets line-height, which would override .otc-tag's 0.95 and make
+     button tags measure taller than spans — changing the packed layout. */
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  line-height: 0.95;
+}
 a.otc-tag:hover,
-a.otc-tag:focus-visible {
-  /* a per-tag color keeps its hue on hover; otherwise use the theme hover color */
+a.otc-tag:focus-visible,
+button.otc-tag:hover,
+button.otc-tag:focus-visible {
   color: var(--otc-tag-color, var(--otc-hover-color, #2563eb));
   opacity: 1 !important;
   text-decoration: none;

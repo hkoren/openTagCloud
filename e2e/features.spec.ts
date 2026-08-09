@@ -304,3 +304,40 @@ test('unsafe tag data cannot inject script URLs or CSS declarations (#35, #36)',
   // and nothing phoned home
   expect(requests.filter((u) => u.includes('__exfil'))).toEqual([]);
 });
+
+test('interactive tags are keyboard-operable buttons and pack like spans (#39)', async ({
+  page,
+}) => {
+  await page.goto('/?n=20');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const spanBoxes = await getBoxes(page);
+
+  await page.goto('/?n=20&click');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  const buttonBoxes = await getBoxes(page);
+
+  const kinds = await page.evaluate(() => ({
+    buttons: document.querySelectorAll('button.otc-tag').length,
+    anchors: document.querySelectorAll('a.otc-tag').length,
+  }));
+  expect(kinds).toEqual({ buttons: 20, anchors: 0 });
+
+  // the layout engine keys off .otc-tag, so the element swap must not move
+  // anything: identical geometry to the span layout
+  expect(buttonBoxes.map((b) => [b.x, b.y])).toEqual(
+    spanBoxes.map((b) => [b.x, b.y]),
+  );
+  expect(countOverlaps(buttonBoxes)).toBe(0);
+
+  // buttons are reachable and activatable by keyboard alone
+  await page.keyboard.press('Tab');
+  const focused = await page.evaluate(() => ({
+    tag: document.activeElement?.tagName,
+    key: (document.activeElement as HTMLElement)?.dataset?.key,
+  }));
+  expect(focused.tag).toBe('BUTTON');
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => (window as any).clicks)).toEqual([
+    focused.key,
+  ]);
+});

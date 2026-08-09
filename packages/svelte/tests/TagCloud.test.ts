@@ -76,6 +76,28 @@ describe('TagCloud (svelte)', () => {
     expect(container.querySelectorAll('.otc-tag')).toHaveLength(1);
   });
 
+  it('renders buttons and fires onTagClick (#39)', async () => {
+    const clicked: string[] = [];
+    const { container } = render(TagCloud, {
+      items,
+      onTagClick: (item: { label: string }) => clicked.push(item.label),
+    });
+    const button = container.querySelector('button.otc-tag') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('type')).toBe('button');
+    button.click();
+    expect(clicked).toHaveLength(1);
+    // links remain links
+    expect(container.querySelector('a.otc-tag')?.getAttribute('href')).toBe(
+      '/js',
+    );
+  });
+
+  it('renders spans when no handler is given', () => {
+    const { container } = render(TagCloud, { items });
+    expect(container.querySelector('button.otc-tag')).toBeNull();
+  });
+
   it('mounts and unmounts without throwing', () => {
     const { unmount } = render(TagCloud, { items });
     expect(unmount).not.toThrow();

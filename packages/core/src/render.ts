@@ -9,6 +9,13 @@ import { TagCloudLayout } from './layout.js';
 export interface RenderOptions extends PrepareOptions {
   /** Also spread terms vertically to fill the container's height. */
   fill?: Fill;
+  /**
+   * Called when a tag is activated (click, or keyboard on a `<button>`).
+   * Supplying it renders non-link tags as buttons, so they are focusable and
+   * keyboard-operable. Links still fire it — call `event.preventDefault()` to
+   * take over navigation (client-side routing).
+   */
+  onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
   /** Add the component stylesheet to the document (default true). */
   injectStyles?: boolean;
 }
@@ -34,7 +41,8 @@ export function createTagElement(
   p: PreparedTag,
   doc: Document = document,
 ): HTMLElement {
-  const el = doc.createElement(p.href ? 'a' : 'span');
+  const el = doc.createElement(p.tag);
+  if (p.tag === 'button') (el as HTMLButtonElement).type = 'button';
   el.className = p.className;
   if (p.href) (el as HTMLAnchorElement).href = p.href;
   el.setAttribute('style', p.style);
@@ -76,12 +84,30 @@ export function renderTagCloud(
 ): TagCloudHandle {
   container.classList.add('otc-cloud');
   const doc = container.ownerDocument;
+  const { onTagClick } = options;
+  // Interactive mode is implied by supplying a click handler.
+  const prepareOptions = { ...options, interactive: !!onTagClick };
+  // Keep the prepared tags so the click handler can map data-key → item
+  // without re-preparing on every click.
+  let prepared: PreparedTag[] = [];
   const render = (list: TagCloudItem[]) => {
-    container.replaceChildren(
-      ...prepareTags(list, options).map((p) => createTagElement(p, doc)),
-    );
+    prepared = prepareTags(list, prepareOptions);
+    container.replaceChildren(...prepared.map((p) => createTagElement(p, doc)));
   };
   render(items);
+
+  // One delegated listener rather than one per tag, so re-renders need no
+  // rebinding and removal on destroy() is a single call.
+  const onClick = onTagClick
+    ? (event: MouseEvent) => {
+        const el = (event.target as Element | null)?.closest?.('.otc-tag');
+        if (!el || !container.contains(el)) return;
+        const key = (el as HTMLElement).dataset.key;
+        const hit = prepared.find((p) => p.key === key);
+        if (hit) onTagClick(hit.item, event);
+      }
+    : undefined;
+  if (onClick) container.addEventListener('click', onClick);
   const layout = new TagCloudLayout(container, options);
   layout.attach();
   return {
@@ -97,6 +123,7 @@ export function renderTagCloud(
     },
     destroy() {
       layout.destroy();
+      if (onClick) container.removeEventListener('click', onClick);
       container.replaceChildren();
       container.classList.remove('otc-cloud', 'otc-packed');
     },

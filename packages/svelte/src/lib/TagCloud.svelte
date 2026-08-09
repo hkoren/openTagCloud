@@ -17,6 +17,7 @@
     ariaLabel,
     fill,
     incremental = false,
+    onTagClick,
   }: {
     /** The tags to lay out. */
     items: TagCloudItem[];
@@ -36,10 +37,21 @@
     ariaLabel?: PrepareOptions['ariaLabel'];
     /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
     incremental?: boolean;
+    /**
+     * Called when a tag is activated. Supplying it renders non-link tags as
+     * `<button>`, so they are focusable and keyboard-operable.
+     */
+    onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
   } = $props();
 
   const prepared = $derived(
-    prepareTags(items, { minPx, maxPx, minOpacity, ariaLabel }),
+    prepareTags(items, {
+      minPx,
+      maxPx,
+      minOpacity,
+      ariaLabel,
+      interactive: !!onTagClick,
+    }),
   );
 
   let root: HTMLElement;
@@ -68,33 +80,28 @@
 
 <div class="otc-cloud" bind:this={root}>
   {#each prepared as p (p.key)}
-    {#if p.href}
-      <a
-        class={p.className}
-        href={p.href}
-        title={p.title}
-        aria-label={p.ariaLabel}
-        style={p.style}
-        data-fs={p.fontPx}
-        data-weight={p.weight}
-        data-key={p.key}
-        >{#each p.parts as part}{#if part.nowrap}<span class="otc-nb"
-              >{part.text}</span
-            >{:else}{part.text}{/if}{/each}</a
-      >
-    {:else}
-      <span
-        class={p.className}
-        title={p.title}
-        aria-label={p.ariaLabel}
-        style={p.style}
-        data-fs={p.fontPx}
-        data-weight={p.weight}
-        data-key={p.key}
-        >{#each p.parts as part}{#if part.nowrap}<span class="otc-nb"
-              >{part.text}</span
-            >{:else}{part.text}{/if}{/each}</span
-      >
-    {/if}
+    <!-- The analyzer cannot see that `tag` is 'a' or 'button' whenever a click
+         handler exists (prepareTags picks 'span' only when onTagClick is
+         absent, in which case onclick is undefined), so the static-element
+         warning is a false positive here. -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <svelte:element
+      this={p.tag}
+      class={p.className}
+      href={p.href}
+      type={p.tag === 'button' ? 'button' : undefined}
+      title={p.title}
+      aria-label={p.ariaLabel}
+      style={p.style}
+      data-fs={p.fontPx}
+      data-weight={p.weight}
+      data-key={p.key}
+      onclick={onTagClick
+        ? (e: MouseEvent) => onTagClick(p.item, e)
+        : undefined}
+      >{#each p.parts as part}{#if part.nowrap}<span class="otc-nb"
+            >{part.text}</span
+          >{:else}{part.text}{/if}{/each}</svelte:element
+    >
   {/each}
 </div>

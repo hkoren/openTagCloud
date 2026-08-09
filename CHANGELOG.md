@@ -19,6 +19,14 @@ Each entry links to its GitHub release, which carries the fuller narrative.
   need, so a value like `red;background-image:url(//evil.test/p.png)` can no
   longer append its own declaration to the inline style ([#35]).
 
+### Added
+
+- `onTagClick` on every adapter (`tagClick` output in Angular, and an option on
+  `mount()`/`renderTagCloud()`): non-link tags render as
+  `<button type="button">` so they are focusable and keyboard-operable, with no
+  visual change. Links still fire it, so `preventDefault()` can take over
+  navigation ([#39]).
+
 ### Fixed
 
 - Tag keys are de-duplicated (`Java`, `Java#2`, …), fixing a hard
@@ -155,3 +163,4 @@ installed directly from GitHub.
 [#36]: https://github.com/hkoren/openTagCloud/issues/36
 [#37]: https://github.com/hkoren/openTagCloud/issues/37
 [#38]: https://github.com/hkoren/openTagCloud/issues/38
+[#39]: https://github.com/hkoren/openTagCloud/issues/39

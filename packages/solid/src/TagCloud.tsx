@@ -6,6 +6,7 @@ import {
   onMount,
   For,
 } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 import {
   prepareTags,
   TagCloudLayout,
@@ -33,6 +34,11 @@ export interface TagCloudProps {
   ariaLabel?: PrepareOptions['ariaLabel'];
   /** Keep unchanged tags in place across item updates (see TagCloudLayoutOptions). */
   incremental?: boolean;
+  /**
+   * Called when a tag is activated. Supplying it renders non-link tags as
+   * `<button>`, so they are focusable and keyboard-operable.
+   */
+  onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
   /** Extra class(es) on the cloud container. */
   class?: string;
 }
@@ -67,6 +73,7 @@ export function TagCloud(props: TagCloudProps) {
       maxPx: props.maxPx ?? 40,
       minOpacity: props.minOpacity ?? 0.62,
       ariaLabel: props.ariaLabel,
+      interactive: !!props.onTagClick,
     }),
   );
 
@@ -98,34 +105,23 @@ export function TagCloud(props: TagCloudProps) {
       class={props.class ? `otc-cloud ${props.class}` : 'otc-cloud'}
     >
       <For each={prepared()}>
-        {(p) =>
-          p.href ? (
-            <a
-              class={p.className}
-              href={p.href}
-              title={p.title}
-              aria-label={p.ariaLabel}
-              style={p.style}
-              data-fs={p.fontPx}
-              data-weight={p.weight}
-              data-key={p.key}
-            >
-              {tagContent(p)}
-            </a>
-          ) : (
-            <span
-              class={p.className}
-              title={p.title}
-              aria-label={p.ariaLabel}
-              style={p.style}
-              data-fs={p.fontPx}
-              data-weight={p.weight}
-              data-key={p.key}
-            >
-              {tagContent(p)}
-            </span>
-          )
-        }
+        {(p) => (
+          <Dynamic
+            component={p.tag}
+            class={p.className}
+            href={p.href}
+            type={p.tag === 'button' ? 'button' : undefined}
+            title={p.title}
+            aria-label={p.ariaLabel}
+            style={p.style}
+            data-fs={p.fontPx}
+            data-weight={p.weight}
+            data-key={p.key}
+            onClick={(e: MouseEvent) => props.onTagClick?.(p.item, e)}
+          >
+            {tagContent(p)}
+          </Dynamic>
+        )}
       </For>
     </div>
   );
