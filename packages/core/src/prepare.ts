@@ -67,6 +67,13 @@ export interface PreparedTag {
   fontPx: number;
   /** Weight-derived opacity (lighter tags fade back). */
   opacity: number;
+  /**
+   * The link target, **validated**: `item.href` when its scheme is safe,
+   * otherwise undefined (unsafe schemes such as `javascript:` are dropped).
+   * Renderers must use this rather than `item.href`, and render a `<span>`
+   * when it is undefined.
+   */
+  href?: string;
   /** Tooltip text. */
   title: string;
   /** Accessible name; set only when the `ariaLabel` option is enabled. */
@@ -99,6 +106,55 @@ function sanitizeWeight(w: number): number {
     );
   }
   return 0;
+}
+
+// `item.href` and `item.color` are frequently derived from user-generated tag
+// data, so both are validated here — the one place every renderer shares.
+let warnedBadHref = false;
+let warnedBadColor = false;
+
+// Schemes that cannot execute script. Anything relative (no scheme at all),
+// including fragments, query-only and protocol-relative URLs, is fine.
+const SAFE_SCHEMES = new Set(['http', 'https', 'mailto', 'tel', 'ftp', 'sms']);
+
+/**
+ * Return `href` when it is safe to put on an anchor, else undefined.
+ *
+ * Browsers ignore ASCII whitespace and control characters inside a scheme, so
+ * `java\tscript:alert(1)` and `\njavascript:alert(1)` are live vectors — they
+ * are stripped before the scheme is read, rather than matched literally.
+ */
+function sanitizeHref(href: string | undefined): string | undefined {
+  if (href == null) return undefined;
+  // eslint-disable-next-line no-control-regex
+  const bare = href.replace(/[\u0000-\u0020\u007f-\u009f]/g, '').toLowerCase();
+  const scheme = /^([a-z][a-z0-9+.-]*):/.exec(bare);
+  if (!scheme || SAFE_SCHEMES.has(scheme[1])) return href;
+  if (!warnedBadHref) {
+    warnedBadHref = true;
+    console.warn(
+      `opentagcloud: refusing unsafe href scheme "${scheme[1]}:" — tag rendered as text`,
+    );
+  }
+  return undefined;
+}
+
+// Everything CSS colors legitimately need — hex, named colors, functional
+// notations (rgb/hsl/oklch/color-mix) and var() — and nothing that could end
+// the declaration or start another. Notably excludes ; { } < > and quotes.
+const SAFE_COLOR = /^[a-z0-9#(),.%\/\s_-]+$/i;
+
+/** Return `color` when it cannot break out of the style declaration, else undefined. */
+function sanitizeColor(color: string | undefined): string | undefined {
+  if (color == null) return undefined;
+  if (SAFE_COLOR.test(color)) return color;
+  if (!warnedBadColor) {
+    warnedBadColor = true;
+    console.warn(
+      'opentagcloud: ignoring tag color containing unsafe characters',
+    );
+  }
+  return undefined;
 }
 
 function lengthFactor(name: string): number {
@@ -166,9 +222,11 @@ export function prepareTags(
       minOpacity +
       Math.pow(w / maxW, 0.8) * (1 - minOpacity)
     ).toFixed(2);
+    const color = sanitizeColor(t.color);
     return {
       item: t,
       key: keys[i],
+      href: sanitizeHref(t.href),
       weight: w,
       text: t.label,
       parts: labelParts(t.label),
@@ -182,7 +240,7 @@ export function prepareTags(
         : undefined,
       className: t.class ? `otc-tag ${t.class}` : 'otc-tag',
       style: `font-size:${fontPx}px;opacity:${opacity};${
-        t.color ? `--otc-tag-color:${t.color};` : ''
+        color ? `--otc-tag-color:${color};` : ''
       }`,
     };
   });

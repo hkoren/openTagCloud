@@ -35,10 +35,10 @@ import {
   host: { class: 'otc-cloud' },
   template: `
     @for (p of prepared; track p.key) {
-      @if (p.item.href) {
+      @if (p.href) {
         <a
           [class]="p.className"
-          [attr.href]="p.item.href"
+          [attr.href]="p.href"
           [attr.title]="p.title"
           [attr.aria-label]="p.ariaLabel ?? null"
           [attr.data-fs]="p.fontPx"

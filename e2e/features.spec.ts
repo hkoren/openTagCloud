@@ -267,3 +267,40 @@ test('fit mode never shrinks type below the base ramp — crowded boxes overflow
   expect(shrunk).toBe(0); // no tag below its base ramp size
   expect(minH).toBeGreaterThan(250); // overflowed instead of cramming
 });
+
+test('unsafe tag data cannot inject script URLs or CSS declarations (#35, #36)', async ({
+  page,
+}) => {
+  const requests: string[] = [];
+  page.on('request', (r) => requests.push(r.url()));
+  await page.goto('/?n=6&unsafe');
+  await page.waitForSelector('.otc-cloud.otc-packed');
+  await page.waitForTimeout(300);
+
+  const state = await page.evaluate(() => {
+    const byKey = (k: string) =>
+      document.querySelector(`.otc-tag[data-key="${k}"]`) as HTMLElement | null;
+    const evil = byKey('evil');
+    const leak = byKey('leak');
+    return {
+      // the javascript: tag must not be a link at all
+      evilTagName: evil?.tagName,
+      evilHasHref: evil?.hasAttribute('href') ?? null,
+      // the injected declaration must never reach the element
+      leakStyle: leak?.getAttribute('style') ?? '',
+      leakBackground: leak ? getComputedStyle(leak).backgroundImage : '',
+      leakColorVar: leak
+        ? getComputedStyle(leak).getPropertyValue('--otc-tag-color').trim()
+        : '',
+    };
+  });
+
+  expect(state.evilTagName).toBe('SPAN');
+  expect(state.evilHasHref).toBe(false);
+  expect(state.leakStyle).not.toContain('background');
+  expect(state.leakBackground).toBe('none');
+  // the whole color is rejected rather than partially applied
+  expect(state.leakColorVar).toBe('');
+  // and nothing phoned home
+  expect(requests.filter((u) => u.includes('__exfil'))).toEqual([]);
+});

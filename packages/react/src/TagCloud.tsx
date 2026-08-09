@@ -115,11 +115,11 @@ export function TagCloud({
       className={className ? `otc-cloud ${className}` : 'otc-cloud'}
     >
       {prepared.map((p) =>
-        p.item.href ? (
+        p.href ? (
           <a
             key={p.key}
             className={p.className}
-            href={p.item.href}
+            href={p.href}
             title={p.title}
             aria-label={p.ariaLabel}
             style={tagStyle(p)}

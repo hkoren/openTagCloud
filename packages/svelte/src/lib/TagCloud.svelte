@@ -68,10 +68,10 @@
 
 <div class="otc-cloud" bind:this={root}>
   {#each prepared as p (p.key)}
-    {#if p.item.href}
+    {#if p.href}
       <a
         class={p.className}
-        href={p.item.href}
+        href={p.href}
         title={p.title}
         aria-label={p.ariaLabel}
         style={p.style}

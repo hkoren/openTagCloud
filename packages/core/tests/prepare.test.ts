@@ -152,6 +152,77 @@ describe('prepareTags', () => {
     expect(b.className).toBe('otc-tag muted x');
   });
 
+  it('drops unsafe href schemes, including obfuscated ones (#36)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const unsafe = [
+      'javascript:alert(1)',
+      'JavaScript:alert(1)',
+      '  javascript:alert(1)',
+      'java\tscript:alert(1)',
+      'java\nscript:alert(1)',
+      '\u0001javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'vbscript:msgbox(1)',
+    ];
+    for (const href of unsafe) {
+      const [p] = prepareTags([item('x', 1, { href })]);
+      expect(p.href, href).toBeUndefined();
+    }
+    // safe and relative forms survive untouched
+    const safe = [
+      '/tags/js',
+      'tags/js',
+      '#js',
+      '?q=js',
+      '//cdn.example/x',
+      'https://example.com/x',
+      'http://example.com/x',
+      'mailto:a@b.co',
+      'tel:+1234',
+    ];
+    for (const href of safe) {
+      const [p] = prepareTags([item('x', 1, { href })]);
+      expect(p.href, href).toBe(href);
+    }
+    warn.mockRestore();
+  });
+
+  it('drops colors that could break out of the style declaration (#35)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const unsafe = [
+      'red;background-image:url(//evil.test/p.png)',
+      'red;position:fixed;inset:0',
+      'red"',
+      "red'",
+      'red<script>',
+      'red}',
+      'red{',
+      'red\n;color:blue',
+    ];
+    for (const color of unsafe) {
+      const [p] = prepareTags([item('x', 1, { color })]);
+      expect(p.style, color).not.toContain('--otc-tag-color');
+      expect(p.style, color).not.toMatch(/background|position|script/i);
+    }
+    // legitimate colors, including modern functional notations, still work
+    for (const color of [
+      'tomato',
+      '#c0392b',
+      '#fff',
+      'rgb(1, 2, 3)',
+      'rgba(1,2,3,.5)',
+      'hsl(210 40% 50%)',
+      'oklch(70% 0.1 200)',
+      'color-mix(in srgb, red 40%, blue)',
+      'var(--danger)',
+      'var(--danger, #fff)',
+    ]) {
+      const [p] = prepareTags([item('x', 1, { color })]);
+      expect(p.style, color).toContain(`--otc-tag-color:${color};`);
+    }
+    warn.mockRestore();
+  });
+
   it('emits the per-tag color custom property only when set', () => {
     const [plain, colored] = prepareTags([
       item('a', 1),
