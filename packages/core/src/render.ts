@@ -46,7 +46,7 @@ export function createTagElement(
   el.className = p.className;
   if (p.href) (el as HTMLAnchorElement).href = p.href;
   el.setAttribute('style', p.style);
-  el.title = p.title;
+  if (p.title) el.title = p.title;
   if (p.ariaLabel) el.setAttribute('aria-label', p.ariaLabel);
   el.dataset.fs = String(p.fontPx);
   el.dataset.weight = String(p.weight);

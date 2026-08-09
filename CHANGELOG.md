@@ -27,8 +27,18 @@ Each entry links to its GitHub release, which carries the fuller narrative.
   visual change. Links still fire it, so `preventDefault()` can take over
   navigation ([#39]).
 
+### Changed
+
+- Tags no longer default their tooltip to the raw weight — a bare number like
+  "95" is meaningless to a visitor. `item.title` still sets one, and
+  `ariaLabel` provides the explained form ([#40]).
+
 ### Fixed
 
+- `mount()` now exposes `setFill()`, matching `renderTagCloud()`, and
+  `<otc-tag-cloud>` adjusts its `fill` attribute in place instead of
+  remounting — which previously discarded the packed layout and the movement
+  animation ([#41]).
 - Tag keys are de-duplicated (`Java`, `Java#2`, …), fixing a hard
   `each_key_duplicate` crash in the Svelte adapter when two tags shared a label
   ([#37]).
@@ -164,3 +174,5 @@ installed directly from GitHub.
 [#37]: https://github.com/hkoren/openTagCloud/issues/37
 [#38]: https://github.com/hkoren/openTagCloud/issues/38
 [#39]: https://github.com/hkoren/openTagCloud/issues/39
+[#40]: https://github.com/hkoren/openTagCloud/issues/40
+[#41]: https://github.com/hkoren/openTagCloud/issues/41

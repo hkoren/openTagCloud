@@ -17,6 +17,8 @@ export interface MountOptions extends PrepareOptions {
 }
 
 export interface CloudHandle {
+  /** Change the fill mode without re-packing from scratch. */
+  setFill(fill: Fill | undefined): void;
   /** The generated `.otc-cloud` root element. */
   el: HTMLElement;
   /** Replace the items and re-render. */
@@ -52,6 +54,12 @@ export function mount(
     el: root,
     update: (next) => handle.update(next),
     repack: () => handle.repack(),
+    setFill: (fill) => {
+      // keep the root's height hint in sync, or a later height-fill would have
+      // nothing to distribute against in a plain block container
+      root.style.height = fill === 'height' || fill === 'both' ? '100%' : '';
+      handle.setFill(fill);
+    },
     destroy() {
       handle.destroy();
       root.remove();
@@ -127,8 +135,14 @@ export function defineElement(tagName?: string): void {
       if (attr === 'items') {
         // the property, once set, owns the data
         if (!this._items) this._handle.update(this.items);
+      } else if (attr === 'fill') {
+        // fill only moves tags, so adjust in place — remounting would discard
+        // the packed layout and the FLIP continuity
+        this._handle.setFill(
+          (this.getAttribute('fill') || undefined) as Fill | undefined,
+        );
       } else {
-        // min-px / max-px / fill are fixed at mount time — remount
+        // min-px / max-px / min-opacity change the prepared tags — remount
         this._handle.destroy();
         this._handle = null;
         this._mount();

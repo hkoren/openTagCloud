@@ -18,7 +18,7 @@ describe('TagCloud (svelte)', () => {
       expect(tag.getAttribute('data-fs')).toMatch(/^\d/);
       expect(tag.getAttribute('data-weight')).toMatch(/^\d/);
       expect(tag.getAttribute('data-key')).toBeTruthy();
-      expect(tag.getAttribute('title')).toBeTruthy();
+      expect(tag.hasAttribute('title')).toBe(false); // no title set on these items (#40)
     }
   });
 

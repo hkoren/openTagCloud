@@ -96,6 +96,23 @@ describe('renderTagCloud click handling (#39)', () => {
   });
 });
 
+describe('mount() handle parity (#41)', () => {
+  it('exposes setFill, like renderTagCloud', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const handle = mount(container, items);
+    expect(typeof handle.setFill).toBe('function');
+    // toggling a height fill keeps the root stretched so distribution has a
+    // height to work against in a plain block parent
+    handle.setFill('height');
+    expect(handle.el.style.height).toBe('100%');
+    handle.setFill(undefined);
+    expect(handle.el.style.height).toBe('');
+    handle.destroy();
+    container.remove();
+  });
+});
+
 describe('defineElement (<otc-tag-cloud>)', () => {
   it('registers once, renders JSON attribute items, honors the items property', () => {
     defineElement();

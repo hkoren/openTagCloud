@@ -249,9 +249,13 @@ describe('prepareTags', () => {
     expect(colored.style).toContain('--otc-tag-color:tomato;');
   });
 
-  it('defaults the title to the raw weight, honoring an explicit title', () => {
+  it('leaves the tooltip empty unless item.title is set (#40)', () => {
     const [a, b] = prepareTags([item('a', 42), item('b', 1, { title: 'hi' })]);
-    expect(a.title).toBe('42');
+    // a bare weight number is meaningless to a visitor, so no default
+    expect(a.title).toBeUndefined();
     expect(b.title).toBe('hi');
+    // the weight is still available in the explained aria form
+    const [c] = prepareTags([item('c', 42)], { ariaLabel: true });
+    expect(c.ariaLabel).toBe('c, weight 42');
   });
 });
