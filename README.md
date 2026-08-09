@@ -415,6 +415,19 @@ interrupted run can simply be re-run; `--tag <dist-tag>` and `--skip-verify`
 are also supported. The `@opentagcloud/*` names require the
 [`opentagcloud` npm org](https://www.npmjs.com/org/create).
 
+## Security
+
+Tag data is often user-generated, so the library validates the fields that reach
+the DOM: `href` (only relative URLs and safe schemes become links — `javascript:`
+and friends render as text), `color` (restricted to characters CSS colors need,
+so it cannot inject extra declarations), and `weight` (clamped). Labels are
+always rendered as text.
+
+`class` and `id` are treated as **trusted** input — `class` is appended to the
+tag's class list — so pass your own values there, not untrusted data.
+[SECURITY.md](./SECURITY.md) has the full trust model and how to report a
+vulnerability privately.
+
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md), or the

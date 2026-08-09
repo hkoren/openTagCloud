@@ -27,6 +27,12 @@ Each entry links to its GitHub release, which carries the fuller narrative.
   visual change. Links still fire it, so `preventDefault()` can take over
   navigation ([#39]).
 
+### Added
+
+- `SECURITY.md` (with private vulnerability reporting enabled) and
+  `CONTRIBUTING.md`, plus a README Security section documenting which
+  `TagCloudItem` fields are validated and which are trusted input ([#42]).
+
 ### Changed
 
 - Tags no longer default their tooltip to the raw weight — a bare number like
@@ -176,3 +182,4 @@ installed directly from GitHub.
 [#39]: https://github.com/hkoren/openTagCloud/issues/39
 [#40]: https://github.com/hkoren/openTagCloud/issues/40
 [#41]: https://github.com/hkoren/openTagCloud/issues/41
+[#42]: https://github.com/hkoren/openTagCloud/issues/42
