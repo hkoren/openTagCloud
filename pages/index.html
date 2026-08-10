@@ -199,17 +199,15 @@
       .density-compare figure {
         margin: 0;
       }
+      /* Roughly twice the height the words need. That headroom is what makes
+         density legible: a tighter cloud leaves the layout room to scale the
+         type up, so the same words render markedly larger in the same box. */
       .density-compare .cloud {
-        /* Sized by content, deliberately: in a fixed-height container the fit
-           scaling grows the type to fill the box and hides the difference.
-           No min-height either — the packer treats one as an imposed height. */
-        height: auto;
+        height: 200px;
         margin: 0 0 0.4rem;
-        padding: 0.5rem 0;
       }
       #density-cloud {
-        height: auto;
-        padding: 0.75rem 0;
+        height: 260px;
       }
       .density-compare figcaption {
         color: #647087;
@@ -351,10 +349,11 @@
               overlap at any setting — drag the slider.
             </p>
             <p>
-              These clouds size to their content so the effect is plain to see.
-              In a <em>fixed-height</em> container the layout instead grows the
-              type to fill the box, which largely compensates — so density reads
-              as a subtler change there.
+              Each box below is about twice as tall as the words strictly need,
+              which is where the setting shows best. Packing words closer
+              together fills more of the box and frees room for the layout to
+              scale the type up, so the same words render noticeably larger at a
+              high density than a low one.
             </p>
           </div>
           <div class="density-controls">
@@ -448,6 +447,42 @@
 
     <script src="./assets/opentagcloud.vanilla.js"></script>
     <script>
+      // A denser word list for the density examples: with only a handful of
+      // words there is no slack for the packing to differ, so the setting looks
+      // like it does nothing.
+      const manyWords = [
+        'JavaScript',
+        'TypeScript',
+        'Python',
+        'Svelte',
+        'Rust',
+        'C#',
+        'Go',
+        'PHP',
+        'C++',
+        'Swift',
+        'Ruby',
+        'Kotlin',
+        'Elixir',
+        'Dart',
+        'Haskell',
+        'Scala',
+        'Lua',
+        'Perl',
+        'Zig',
+        'Clojure',
+        'Julia',
+        'Erlang',
+        'Nim',
+        'Crystal',
+        'Fortran',
+        'OCaml',
+        'Groovy',
+        'Racket',
+        'Prolog',
+        'COBOL',
+      ].map((label, i) => ({ label, weight: ((i * 37) % 100) + 1 }));
+
       const languages = [
         { label: 'JavaScript', weight: 95, href: '#basic' },
         { label: 'TypeScript', weight: 88, href: '#basic' },
@@ -492,8 +527,8 @@
       // settings side by side so the difference is visible without interacting.
       const densityCloud = openTagCloud.mount(
         document.querySelector('#density-cloud'),
-        languages,
-        { minPx: 13, maxPx: 46, density: 0.5 },
+        manyWords,
+        { minPx: 12, maxPx: 34, density: 0.5 },
       );
       const densityRange = document.querySelector('#density-range');
       const densityValue = document.querySelector('#density-value');
@@ -507,9 +542,9 @@
         ['#density-50', 0.5],
         ['#density-100', 1],
       ]) {
-        openTagCloud.mount(document.querySelector(id), languages.slice(0, 10), {
-          minPx: 11,
-          maxPx: 30,
+        openTagCloud.mount(document.querySelector(id), manyWords, {
+          minPx: 10,
+          maxPx: 26,
           density,
         });
       }
