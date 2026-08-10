@@ -37,6 +37,14 @@ export const PAD = 5;
 /** @internal Area slack factor used to derive the packing box height. */
 export const LOOSEN = 1.4;
 
+/**
+ * @internal Gap between boxes for a given density. Density is meant to control
+ * how closely words sit, not only where they start: at 0 the cloud is airier
+ * than the default, at 1 words nearly touch. 0.5 reproduces the historical PAD.
+ */
+export const padFor = (density: number): number =>
+  Math.max(1, PAD * (1.4 - 0.8 * density));
+
 /** @internal Clamp a caller-supplied density to [0, 1], defaulting to 0.5. */
 export function clampDensity(density: number | undefined): number {
   if (density == null || !Number.isFinite(density)) return 0.5;
@@ -53,15 +61,15 @@ type Rect = { x: number; y: number; w: number; h: number };
 // coarse grid so each probe checks only nearby rects instead of every placed
 // rect (a naive scan is O(n² × probes) and janks at a few hundred tags).
 // PAD-padded overlap semantics, strict interior.
-function createSpatialHash() {
+function createSpatialHash(pad: number = PAD) {
   const BUCKET = 64;
   const buckets = new Map<number, Rect[]>();
   const bucketKey = (bx: number, by: number) => by * 8192 + bx;
   const bucketRange = (x: number, y: number, w: number, h: number) => [
-    Math.max(0, Math.floor((x - PAD) / BUCKET)),
-    Math.max(0, Math.floor((x + w + PAD) / BUCKET)),
-    Math.max(0, Math.floor((y - PAD) / BUCKET)),
-    Math.max(0, Math.floor((y + h + PAD) / BUCKET)),
+    Math.max(0, Math.floor((x - pad) / BUCKET)),
+    Math.max(0, Math.floor((x + w + pad) / BUCKET)),
+    Math.max(0, Math.floor((y - pad) / BUCKET)),
+    Math.max(0, Math.floor((y + h + pad) / BUCKET)),
   ];
   return {
     insert(r: Rect): void {
@@ -82,10 +90,10 @@ function createSpatialHash() {
           if (!list) continue;
           for (const r of list)
             if (
-              x < r.x + r.w + PAD &&
-              x + w + PAD > r.x &&
-              y < r.y + r.h + PAD &&
-              y + h + PAD > r.y
+              x < r.x + r.w + pad &&
+              x + w + pad > r.x &&
+              y < r.y + r.h + pad &&
+              y + h + pad > r.y
             )
               return true;
         }
@@ -481,7 +489,8 @@ export class TagCloudLayout {
         }
       }
 
-      const { insert, hits } = createSpatialHash();
+      const pad = padFor(this.#density);
+      const { insert, hits } = createSpatialHash(pad);
 
       pos = new Array<{ x: number; y: number }>(n);
       maxY = 0;
@@ -502,7 +511,10 @@ export class TagCloudLayout {
           if (y < 0) y = 0;
           if (!hits(x, y, w, h)) break;
           angle += 0.5;
-          radius += Math.max(3, Math.min(cellW, cellH) * 0.12);
+          // a finer step at high density finds tighter-fitting spots
+          radius +=
+            Math.max(3, Math.min(cellW, cellH) * 0.12) *
+            (1.2 - 0.4 * this.#density);
           if (++steps > 4000) break;
         }
         insert({ x, y, w, h });
@@ -584,7 +596,7 @@ export class TagCloudLayout {
 
     const n = dims.length;
     const order = dims.map((_, i) => i).sort((a, b) => weights[b] - weights[a]);
-    const { insert, hits } = createSpatialHash();
+    const { insert, hits } = createSpatialHash(padFor(this.#density));
     const pos = new Array<{ x: number; y: number }>(n);
     const toPlace: number[] = [];
 

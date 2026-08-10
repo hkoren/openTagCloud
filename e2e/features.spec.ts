@@ -376,6 +376,27 @@ test('density changes the arrangement deterministically, never overlapping (#51)
   const middle = await layoutAt(0.5);
   const tight = await layoutAt(1);
 
+  // Directional check: density also tightens the gap between boxes, so the
+  // cloud's own bounding box holds proportionally more ink as density rises.
+  // (Measured across container widths and word counts: ~0.23 -> ~0.35.)
+  const fillAt = async (density: number) => {
+    await page.goto(`/?n=30&auto&density=${density}`);
+    await page.waitForSelector('.otc-cloud.otc-packed');
+    await page.waitForTimeout(150);
+    const boxes = await getBoxes(page);
+    const w =
+      Math.max(...boxes.map((b) => b.x + b.w)) -
+      Math.min(...boxes.map((b) => b.x));
+    const h =
+      Math.max(...boxes.map((b) => b.y + b.h)) -
+      Math.min(...boxes.map((b) => b.y));
+    const ink = boxes.reduce((s, b) => s + b.w * b.h, 0);
+    return ink / (w * h);
+  };
+  const looseFill = await fillAt(0);
+  const tightFill = await fillAt(1);
+  expect(tightFill).toBeGreaterThan(looseFill * 1.1);
+
   // density demonstrably changes the arrangement, end to end through the DOM
   expect(loose).not.toBe(middle);
   expect(middle).not.toBe(tight);
