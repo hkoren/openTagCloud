@@ -7,17 +7,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All packages in the monorepo share a version and are released together.
 Each entry links to its GitHub release, which carries the fuller narrative.
 
-## Unreleased
+## [0.5.0] — 2026-08-09
+
+Two security fixes for untrusted tag data, clickable tags, and layout controls.
 
 ### Security
 
 - `item.href` is validated: only relative URLs and safe schemes (`http`,
   `https`, `mailto`, `tel`, `ftp`, `sms`) become links. `javascript:`, `data:`
-  and friends — including whitespace/control-character obfuscations like
-  `java\tscript:` — are dropped and the tag renders as text ([#36]).
+  and friends — including whitespace and control-character obfuscations spliced
+  into the scheme — are dropped and the tag renders as text ([#36]).
 - `item.color` is validated against the characters CSS colors legitimately
   need, so a value like `red;background-image:url(//evil.test/p.png)` can no
-  longer append its own declaration to the inline style ([#35]).
+  longer append its own declaration to the inline style and make the browser
+  fetch an attacker URL ([#35]).
+
+Both matter because tag data is frequently user-generated. `class` and `id`
+remain **trusted** input — see [SECURITY.md](./SECURITY.md).
 
 ### Added
 
@@ -26,44 +32,44 @@ Each entry links to its GitHub release, which carries the fuller narrative.
   `<button type="button">` so they are focusable and keyboard-operable, with no
   visual change. Links still fire it, so `preventDefault()` can take over
   navigation ([#39]).
-
-### Added
-
+- `density` (0–1, default `0.5`) on every adapter, `mount()`/`renderTagCloud()`,
+  and as a `density` attribute on `<otc-tag-cloud>`: `0` distributes terms
+  evenly across the container, `1` packs them tightly around the centre leaving
+  the corners empty. Terms never overlap at any setting ([#51]).
 - `SECURITY.md` (with private vulnerability reporting enabled) and
   `CONTRIBUTING.md`, plus a README Security section documenting which
   `TagCloudItem` fields are validated and which are trusted input ([#42]).
 
-### Added
-
-- `density` (0–1, default `0.5`) on every adapter, `mount()`/`renderTagCloud()`,
-  and as a `density` attribute on `<otc-tag-cloud>`: `0` distributes terms
-  evenly across the container, `1` packs them tightly around the centre leaving
-  the corners empty. Terms never overlap at any setting. **This changes the
-  default arrangement** — pass `density={0}` for the previous even spread
-  ([#51]).
-
 ### Changed
 
-- The cloud now takes its container's aspect ratio: each term's growth front is
+- **The cloud takes its container's aspect ratio.** Each term's growth front is
   stretched to the box, so a wide container gets a wide elliptical cloud instead
-  of a circular one floating in the middle. Measured on a 3.6:1 container, the
-  cloud's aspect went from ~1.25 (nearly circular) to ~3.5.
-
+  of a circular one floating in the middle. On a 3.6:1 container the cloud's
+  aspect went from ~1.25 (nearly circular) to ~3.5.
+- **The default arrangement is now slightly clustered** (`density` defaults to
+  `0.5`). Pass `density={0}` for the previous even spread.
 - Tags no longer default their tooltip to the raw weight — a bare number like
   "95" is meaningless to a visitor. `item.title` still sets one, and
   `ariaLabel` provides the explained form ([#40]).
 
 ### Fixed
 
+- Tag keys are de-duplicated (`Java`, `Java#2`, …), fixing a hard
+  `each_key_duplicate` crash in the Svelte adapter when two tags shared a label
+  ([#37]).
 - `mount()` now exposes `setFill()`, matching `renderTagCloud()`, and
   `<otc-tag-cloud>` adjusts its `fill` attribute in place instead of
   remounting — which previously discarded the packed layout and the movement
   animation ([#41]).
-- Tag keys are de-duplicated (`Java`, `Java#2`, …), fixing a hard
-  `each_key_duplicate` crash in the Svelte adapter when two tags shared a label
-  ([#37]).
 - Published packages now contain the MIT `LICENSE` file, which every package
   declared but none shipped ([#38]).
+
+### Upgrading
+
+Layouts will look different: clouds are now shaped to their container and
+slightly clustered by default. `density={0}` restores the previous spread,
+though the elliptical shaping stays. Unsafe `href`/`color` values are now
+dropped rather than rendered, and tooltips no longer show a weight number.
 
 ## [0.4.2] — 2026-08-08
 
@@ -185,6 +191,7 @@ The original Svelte 5 component — self-packing layout, deterministic scatter,
 CSS custom property theming, and per-tag `color`. Never published to npm;
 installed directly from GitHub.
 
+[0.5.0]: https://github.com/hkoren/openTagCloud/releases/tag/v0.5.0
 [0.4.2]: https://github.com/hkoren/openTagCloud/releases/tag/v0.4.2
 [0.4.1]: https://github.com/hkoren/openTagCloud/releases/tag/v0.4.1
 [0.4.0]: https://github.com/hkoren/openTagCloud/releases/tag/v0.4.0
