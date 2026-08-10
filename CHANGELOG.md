@@ -7,6 +7,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All packages in the monorepo share a version and are released together.
 Each entry links to its GitHub release, which carries the fuller narrative.
 
+## Unreleased
+
+### Changed
+
+- `density` now also scales the **gap between terms**, not just how far their
+  anchors spread from the centre. Measuring the shipped 0.5.0 behaviour showed
+  the parameter barely changed the rendered cloud (0–5% in most configurations),
+  because anchor contraction alone is masked by terms needing the full width and
+  by the elliptical growth front. With spacing included, raising density visibly
+  compacts the cloud: ink inside the cloud's bounding box rises from ~0.23 to
+  ~0.35 and the cloud gets shorter. `0.5` keeps the historical 5px gap, so the
+  default is unchanged ([#51]).
+
 ## [0.5.0] — 2026-08-09
 
 Two security fixes for untrusted tag data, clickable tags, and layout controls.

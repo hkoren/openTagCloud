@@ -1,7 +1,7 @@
 export type { TagCloudItem, Fill } from './types.js';
 export { prepareTags, keyOf } from './prepare.js';
 export type { PreparedTag, PrepareOptions, LabelPart } from './prepare.js';
-export { TagCloudLayout, clampDensity } from './layout.js';
+export { TagCloudLayout, clampDensity, padFor } from './layout.js';
 export type { TagCloudLayoutOptions } from './layout.js';
 export { renderTagCloud, createTagElement } from './render.js';
 export type { RenderOptions, TagCloudHandle } from './render.js';

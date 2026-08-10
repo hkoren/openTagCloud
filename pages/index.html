@@ -167,6 +167,63 @@
       .wide .cloud {
         height: 270px;
       }
+      .density-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0.9rem 0.65rem 0;
+        font-weight: 600;
+        color: #3c4763;
+      }
+      .density-controls input[type='range'] {
+        flex: 1 1 220px;
+        min-width: 180px;
+        accent-color: #4338ca;
+      }
+      .density-value {
+        min-width: 2.6rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 6px;
+        color: #4338ca;
+        background: #eef2ff;
+        font-variant-numeric: tabular-nums;
+        text-align: center;
+      }
+      .density-compare {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.65rem;
+        margin: 0.65rem;
+      }
+      .density-compare figure {
+        margin: 0;
+      }
+      .density-compare .cloud {
+        /* Sized by content, deliberately: in a fixed-height container the fit
+           scaling grows the type to fill the box and hides the difference.
+           No min-height either — the packer treats one as an imposed height. */
+        height: auto;
+        margin: 0 0 0.4rem;
+        padding: 0.5rem 0;
+      }
+      #density-cloud {
+        height: auto;
+        padding: 0.75rem 0;
+      }
+      .density-compare figcaption {
+        color: #647087;
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      .density-compare figcaption b {
+        color: #172033;
+      }
+      @media (max-width: 760px) {
+        .density-compare {
+          grid-template-columns: 1fr;
+        }
+      }
       .page-list {
         margin: 0.75rem 0 0;
         padding-left: 1.1rem;
@@ -240,6 +297,7 @@
         <a class="example-link" href="#basic">Basic</a>
         <a class="example-link" href="#theming">Theming</a>
         <a class="example-link" href="#colors">Per-tag color</a>
+        <a class="example-link" href="#density">Density</a>
         <a class="example-link" href="#element">Custom element</a>
         <a class="example-link" href="#pages">Full pages</a>
       </nav>
@@ -281,6 +339,52 @@
             <p>Use color to reveal categories without changing the layout.</p>
           </div>
           <div class="cloud" id="color-cloud"></div>
+        </section>
+
+        <section class="card wide" id="density">
+          <div class="copy">
+            <h2>Density</h2>
+            <p>
+              <code>density</code> (0–1) sets how tightly words cluster:
+              <b>0</b> spreads them evenly across the container, <b>1</b> packs
+              them around the centre and leaves the corners empty. Words never
+              overlap at any setting — drag the slider.
+            </p>
+            <p>
+              These clouds size to their content so the effect is plain to see.
+              In a <em>fixed-height</em> container the layout instead grows the
+              type to fill the box, which largely compensates — so density reads
+              as a subtler change there.
+            </p>
+          </div>
+          <div class="density-controls">
+            <label for="density-range">density</label>
+            <input
+              id="density-range"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value="0.5"
+              aria-describedby="density-value"
+            />
+            <output id="density-value" class="density-value">0.50</output>
+          </div>
+          <div class="cloud" id="density-cloud"></div>
+          <div class="density-compare">
+            <figure>
+              <div class="cloud" id="density-0"></div>
+              <figcaption><b>0</b> — evenly distributed</figcaption>
+            </figure>
+            <figure>
+              <div class="cloud" id="density-50"></div>
+              <figcaption><b>0.5</b> — the default</figcaption>
+            </figure>
+            <figure>
+              <div class="cloud" id="density-100"></div>
+              <figcaption><b>1</b> — clustered, corners empty</figcaption>
+            </figure>
+          </div>
         </section>
 
         <section class="card" id="element">
@@ -384,6 +488,32 @@
         { minPx: 13, maxPx: 45 },
       );
       const npmPkg = (name) => `https://www.npmjs.com/package/${name}`;
+      // Density: one interactive cloud driven by the slider, plus three fixed
+      // settings side by side so the difference is visible without interacting.
+      const densityCloud = openTagCloud.mount(
+        document.querySelector('#density-cloud'),
+        languages,
+        { minPx: 13, maxPx: 46, density: 0.5 },
+      );
+      const densityRange = document.querySelector('#density-range');
+      const densityValue = document.querySelector('#density-value');
+      densityRange.addEventListener('input', () => {
+        const d = Number(densityRange.value);
+        densityValue.textContent = d.toFixed(2);
+        densityCloud.setDensity(d);
+      });
+      for (const [id, density] of [
+        ['#density-0', 0],
+        ['#density-50', 0.5],
+        ['#density-100', 1],
+      ]) {
+        openTagCloud.mount(document.querySelector(id), languages.slice(0, 10), {
+          minPx: 11,
+          maxPx: 30,
+          density,
+        });
+      }
+
       openTagCloud.mount(
         document.querySelector('#framework-cloud'),
         [
