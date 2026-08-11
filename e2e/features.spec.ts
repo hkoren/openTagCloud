@@ -464,10 +464,16 @@ test('fillFactor controls negative space, and re-enables density (#58)', async (
   const mid = await stats('fillFactor=0.75');
   const sparse = await stats('fillFactor=0');
 
-  // More fill → bigger type and more of the container covered.
-  expect(full.avgFont).toBeGreaterThan(mid.avgFont);
-  expect(mid.avgFont).toBeGreaterThan(sparse.avgFont);
-  expect(full.inkOfBox).toBeGreaterThan(sparse.inkOfBox);
+  // More fill → more of the container covered. Coverage is the guarantee the
+  // setting actually makes, and it is monotonic; font size is NOT a safe proxy
+  // for it. The fit loop retries in discrete steps, so which step a given
+  // factor lands on shifts with platform font metrics — CI measured a *smaller*
+  // average font at 1 (26.2) than at 0.75 (27.3) even though 1 covered more.
+  expect(full.inkOfBox).toBeGreaterThan(mid.inkOfBox);
+  expect(mid.inkOfBox).toBeGreaterThan(sparse.inkOfBox);
+  // Type still grows substantially between the extremes, where the gap is far
+  // larger than any single retry step.
+  expect(full.avgFont).toBeGreaterThan(sparse.avgFont * 1.2);
 
   // At 0 the type collapses to the authored ramp — the layout stops growing it.
   const baseRamp = await page.evaluate(() => {
