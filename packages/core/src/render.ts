@@ -11,6 +11,8 @@ export interface RenderOptions extends PrepareOptions {
   fill?: Fill;
   /** How tightly terms cluster, 0–1 (default 0.5). See TagCloudLayoutOptions. */
   density?: number;
+  /** Fraction of a sized container to occupy, 0–1 (default 0.75). See TagCloudLayoutOptions. */
+  fillFactor?: number;
   /**
    * Called when a tag is activated (click, or keyboard on a `<button>`).
    * Supplying it renders non-link tags as buttons, so they are focusable and
@@ -28,6 +30,8 @@ export interface TagCloudHandle {
   update(items: TagCloudItem[]): void;
   /** Change the clustering density (0–1) and re-pack. */
   setDensity(density: number | undefined): void;
+  /** Change how much of the container to fill (0–1) and re-pack. */
+  setFillFactor(fillFactor: number | undefined): void;
   /** Force a re-pack (e.g. after external style changes). */
   repack(): void;
   /** Change the fill mode. */
@@ -127,6 +131,9 @@ export function renderTagCloud(
     },
     setDensity(density) {
       layout.setDensity(density);
+    },
+    setFillFactor(fillFactor) {
+      layout.setFillFactor(fillFactor);
     },
     destroy() {
       layout.destroy();

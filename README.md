@@ -223,6 +223,7 @@ vite-plugin-solid like your own code.)
 | `minOpacity`  | `number`                        | `0.62`  | Opacity of the lightest tag. Raise it (e.g. `0.8`) if your theme color falls below WCAG AA contrast at the floor; `1` disables the fade.                                                                                                                                |
 | `ariaLabel`   | `boolean \| (item) => string`   | `false` | Accessible name per tag. `true` → `"<label>, weight <weight>"` so screen readers hear the ranking; pass a function for custom wording/i18n.                                                                                                                             |
 | `density`     | `number`                        | `0.5`   | How tightly terms cluster, 0–1. `0` distributes them evenly across the container; `1` packs them as tightly as possible around the centre, leaving the corners empty.                                                                                                   |
+| `fillFactor`  | `number`                        | `0.75`  | How much of a **sized** container to occupy (0–1). `1` scales the type up until the cloud fills the box; lower values leave negative space; `0` keeps the authored `minPx`/`maxPx` ramp. Unrelated to `fill`.                                                           |
 | `incremental` | `boolean`                       | `false` | Keep unchanged tags in place across item updates — only new/changed tags move (great for live data). Falls back to a full re-pack on width changes or heavy churn.                                                                                                      |
 | `onTagClick`  | `(item, event) => void`         | —       | Called when a tag is activated. Supplying it renders non-link tags as `<button type="button">`, so they are focusable and keyboard-operable; links still fire it, so you can `preventDefault()` for client-side routing. Angular exposes this as the `tagClick` output. |
 
@@ -338,6 +339,36 @@ elliptical cloud rather than a circle floating in the middle of it. Note the
 tradeoff: raising density deliberately trades container fill for a tighter
 cloud, so a clustered cloud can be taller than an evenly distributed one in an
 auto-height container, and will not reach the edges of a sized one.
+
+## Negative space
+
+In a container with a fixed height the packer scales the font ramp up so the
+cloud fills the box. `fillFactor` (0–1, default `0.75`) says how much of the box
+to aim for:
+
+```svelte
+<div style="height: 320px">
+  <TagCloud {items} fillFactor={0.5} />
+</div>
+```
+
+- `1` — fills the container, the largest type that fits (the pre-0.6 behaviour).
+- `0.75` — the default: fills most of it, leaving a little air.
+- `0` — no growth at all; the type stays at the `minPx`/`maxPx` ramp you
+  authored, leaving as much empty space as that implies.
+
+Treat it as a target rather than an exact ratio: the type is scaled in discrete
+steps with a retry if the result overflows, so two nearby values can land on the
+same step. The trend across the range is what matters.
+
+It also decides whether **`density` is visible**: at full fill, the font growth
+absorbs whatever space tighter packing frees up, so clustering has nothing to
+show. Leave some room and the two settings compose — `density` moves the words
+closer together, `fillFactor` decides how much of the box they should claim.
+
+`fillFactor` has no effect on auto-height containers, which already pack to
+their natural area, and it is unrelated to `fill` (`'width' | 'height' |
+'both'`), which spreads terms to cover the container's height.
 
 ## Handling clicks
 

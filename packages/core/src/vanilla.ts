@@ -14,6 +14,8 @@ export interface MountOptions extends PrepareOptions {
   onTagClick?: (item: TagCloudItem, event: MouseEvent) => void;
   /** How tightly terms cluster, 0–1 (default 0.5). */
   density?: number;
+  /** Fraction of a sized container to occupy, 0–1 (default 0.75). */
+  fillFactor?: number;
   /** Keep unchanged tags in place across `update()` calls (see TagCloudLayoutOptions). */
   incremental?: boolean;
 }
@@ -23,6 +25,8 @@ export interface CloudHandle {
   setFill(fill: Fill | undefined): void;
   /** Change the clustering density (0–1) and re-pack. */
   setDensity(density: number | undefined): void;
+  /** Change how much of the container to fill (0–1) and re-pack. */
+  setFillFactor(fillFactor: number | undefined): void;
   /** The generated `.otc-cloud` root element. */
   el: HTMLElement;
   /** Replace the items and re-render. */
@@ -59,6 +63,7 @@ export function mount(
     update: (next) => handle.update(next),
     repack: () => handle.repack(),
     setDensity: (density) => handle.setDensity(density),
+    setFillFactor: (fillFactor) => handle.setFillFactor(fillFactor),
     setFill: (fill) => {
       // keep the root's height hint in sync, or a later height-fill would have
       // nothing to distribute against in a plain block container
@@ -100,6 +105,7 @@ export function defineElement(tagName?: string): void {
         'weight-labels',
         'incremental',
         'density',
+        'fill-factor',
       ];
     }
 
@@ -143,6 +149,8 @@ export function defineElement(tagName?: string): void {
         if (!this._items) this._handle.update(this.items);
       } else if (attr === 'density') {
         this._handle.setDensity(this._num('density'));
+      } else if (attr === 'fill-factor') {
+        this._handle.setFillFactor(this._num('fill-factor'));
       } else if (attr === 'fill') {
         // fill only moves tags, so adjust in place — remounting would discard
         // the packed layout and the FLIP continuity

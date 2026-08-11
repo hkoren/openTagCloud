@@ -439,3 +439,71 @@ test("the cloud takes its container's aspect ratio, not a circle (#51 follow-up)
   expect(wide).toBeGreaterThan(square);
   expect(square).toBeGreaterThan(tall);
 });
+
+test('fillFactor controls negative space, and re-enables density (#58)', async ({
+  page,
+}) => {
+  // A sized container: this is where the font scaling operates.
+  const stats = async (query: string) => {
+    await page.goto(`/?n=24&${query}`);
+    await page.waitForSelector('.otc-cloud.otc-packed');
+    await page.waitForTimeout(150);
+    return page.evaluate(() => {
+      const box = document.getElementById('box')!;
+      const tags = [...document.querySelectorAll<HTMLElement>('.otc-tag')];
+      const fonts = tags.map((t) => parseFloat(getComputedStyle(t).fontSize));
+      const ink = tags.reduce((s, t) => s + t.offsetWidth * t.offsetHeight, 0);
+      return {
+        avgFont: +(fonts.reduce((a, b) => a + b, 0) / fonts.length).toFixed(1),
+        inkOfBox: +(ink / (box.clientWidth * box.clientHeight)).toFixed(3),
+      };
+    });
+  };
+
+  const full = await stats('fillFactor=1');
+  const mid = await stats('fillFactor=0.75');
+  const sparse = await stats('fillFactor=0');
+
+  // Growing the type happens in discrete retry steps, so ADJACENT factors are
+  // not reliably ordered — on CI, 1 landed at 0.298 coverage while 0.75 landed
+  // at 0.322, because the overflow retry at 1 overshot downward. Only compare
+  // against 0, where no growth happens at all and the ordering is guaranteed.
+  expect(full.inkOfBox).toBeGreaterThan(sparse.inkOfBox);
+  expect(mid.inkOfBox).toBeGreaterThan(sparse.inkOfBox);
+  // How much bigger the type gets is not worth asserting a ratio on — it
+  // depends on the headroom in this particular box and on font metrics. What is
+  // exact: at 0 the layout does not grow the ramp at all, and above 0 it does.
+  expect(full.avgFont).toBeGreaterThan(sparse.avgFont);
+  expect(mid.avgFont).toBeGreaterThan(sparse.avgFont);
+
+  // At 0 the type collapses to the authored ramp — the layout stops growing it.
+  const baseRamp = await page.evaluate(() => {
+    const tags = [...document.querySelectorAll<HTMLElement>('.otc-tag')];
+    const cloud = document.getElementById('cloud')!;
+    const wf = Math.min(1.25, Math.max(0.72, cloud.clientWidth / 460));
+    return tags.every((t) => {
+      const base = Math.max(8, parseFloat(t.dataset.fs || '12') * wf);
+      return parseFloat(getComputedStyle(t).fontSize) <= base + 0.2;
+    });
+  });
+  expect(baseRamp).toBe(true);
+
+  // ...and the converse: with fill to claim, at least one tag exceeds it.
+  await stats('fillFactor=1');
+  const grew = await page.evaluate(() => {
+    const tags = [...document.querySelectorAll<HTMLElement>('.otc-tag')];
+    const cloud = document.getElementById('cloud')!;
+    const wf = Math.min(1.25, Math.max(0.72, cloud.clientWidth / 460));
+    return tags.some((t) => {
+      const base = Math.max(8, parseFloat(t.dataset.fs || '12') * wf);
+      return parseFloat(getComputedStyle(t).fontSize) > base + 0.5;
+    });
+  });
+  expect(grew).toBe(true);
+
+  // The point of the setting (#58): with room to spare, density is legible
+  // again, because the font growth is no longer absorbing what it frees up.
+  const inkAt = async (density: number) =>
+    (await stats(`fillFactor=0.6&density=${density}`)).inkOfBox;
+  expect(await inkAt(1)).toBeGreaterThan((await inkAt(0)) * 1.05);
+});

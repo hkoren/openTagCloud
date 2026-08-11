@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampDensity, padFor } from '../src/index.js';
+import { clampDensity, clampFillFactor, padFor } from '../src/index.js';
 
 describe('clampDensity (#51)', () => {
   it('defaults to 0.5 and clamps to [0, 1]', () => {
@@ -24,5 +24,19 @@ describe('padFor (#51)', () => {
     for (let i = 1; i < pads.length; i++)
       expect(pads[i]).toBeLessThan(pads[i - 1]);
     expect(Math.min(...pads)).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('clampFillFactor (#58)', () => {
+  it('defaults to 0.75 and clamps to [0, 1]', () => {
+    expect(clampFillFactor(undefined)).toBe(0.75);
+    expect(clampFillFactor(NaN)).toBe(0.75);
+    expect(clampFillFactor(Infinity)).toBe(0.75);
+    expect(clampFillFactor('1' as unknown as number)).toBe(0.75);
+    expect(clampFillFactor(-2)).toBe(0);
+    expect(clampFillFactor(7)).toBe(1);
+    expect(clampFillFactor(0)).toBe(0);
+    expect(clampFillFactor(1)).toBe(1);
+    expect(clampFillFactor(0.4)).toBe(0.4);
   });
 });

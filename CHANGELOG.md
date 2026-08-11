@@ -9,6 +9,21 @@ Each entry links to its GitHub release, which carries the fuller narrative.
 
 ## Unreleased
 
+### Added
+
+- **`fillFactor`** (0–1, default `0.75`) — how much of a sized container the
+  cloud aims to occupy. `1` reproduces the previous behaviour of scaling the
+  font ramp up until the cloud fills the box; lower values leave negative space,
+  and `0` keeps the authored `minPx`/`maxPx` ramp. Available on every adapter,
+  on `mount()`/`renderTagCloud()` (with `setFillFactor()`), and as the
+  `fill-factor` attribute on `<otc-tag-cloud>`. Unrelated to the existing `fill`
+  option ([#58]).
+
+  This is also what makes `density` observable: at full fill the font growth
+  absorbed any space that tighter packing freed up. The new **default of 0.75**
+  therefore changes rendering slightly — type is a little smaller in sized
+  containers than in 0.5.x, in exchange for the two settings composing.
+
 ### Changed
 
 - `density` now also scales the **gap between terms**, not just how far their
@@ -218,3 +233,4 @@ installed directly from GitHub.
 [#41]: https://github.com/hkoren/openTagCloud/issues/41
 [#42]: https://github.com/hkoren/openTagCloud/issues/42
 [#51]: https://github.com/hkoren/openTagCloud/issues/51
+[#58]: https://github.com/hkoren/openTagCloud/issues/58

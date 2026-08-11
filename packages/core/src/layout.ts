@@ -22,6 +22,22 @@ export interface TagCloudLayoutOptions {
    */
   density?: number;
   /**
+   * How much of a sized container the cloud aims to occupy, 0–1 (default
+   * 0.75). At 1 the font ramp is scaled up until the cloud fills the box, as
+   * it always did; lower values deliberately leave negative space, and 0 keeps
+   * the authored `minPx`/`maxPx` ramp. Only applies when the container imposes
+   * a height — auto-height containers already pack to their natural area.
+   *
+   * Treat it as a target rather than a precise ratio: the layout grows the
+   * ramp in discrete steps and retries if the result overflows, so two nearby
+   * values (say 1 and 0.75) can land on the same step or even swap which covers
+   * slightly more. The trend across the range is what is meaningful.
+   *
+   * Note this is unrelated to `fill`, which controls whether terms spread to
+   * cover the container's height.
+   */
+  fillFactor?: number;
+  /**
    * Keep unchanged tags in place when `refresh()` runs after an item update:
    * tags whose measured box still fits at its old position stay put; only
    * new, resized, or displaced tags are re-placed (seeded from their old
@@ -44,6 +60,13 @@ export const LOOSEN = 1.4;
  */
 export const padFor = (density: number): number =>
   Math.max(1, PAD * (1.4 - 0.8 * density));
+
+/** @internal Clamp a caller-supplied fill factor to [0, 1], defaulting to 0.75. */
+export function clampFillFactor(fillFactor: number | undefined): number {
+  if (typeof fillFactor !== 'number' || !Number.isFinite(fillFactor))
+    return 0.75;
+  return Math.min(1, Math.max(0, fillFactor));
+}
 
 /** @internal Clamp a caller-supplied density to [0, 1], defaulting to 0.5. */
 export function clampDensity(density: number | undefined): number {
@@ -125,6 +148,7 @@ export class TagCloudLayout {
   #injectStyles: boolean;
   #incremental: boolean;
   #density: number;
+  #fillFactor: number;
   #lastW = -1;
   #lastH = -1;
   // packed base layout (natural top-left of each term) + its natural height;
@@ -150,6 +174,7 @@ export class TagCloudLayout {
     this.#injectStyles = options.injectStyles ?? true;
     this.#incremental = options.incremental ?? false;
     this.#density = clampDensity(options.density);
+    this.#fillFactor = clampFillFactor(options.fillFactor);
   }
 
   get #fillH(): boolean {
@@ -204,6 +229,17 @@ export class TagCloudLayout {
   }
 
   /** Change the clustering density (0–1) and re-pack. */
+  /**
+   * Change how much of the container the cloud aims to fill (0–1). Re-packs,
+   * since it changes the font scale and therefore every measurement.
+   */
+  setFillFactor(fillFactor: number | undefined): void {
+    const next = clampFillFactor(fillFactor);
+    if (next === this.#fillFactor) return;
+    this.#fillFactor = next;
+    if (typeof window !== 'undefined' && !this.#destroyed) this.pack();
+  }
+
   setDensity(density: number | undefined): void {
     const next = clampDensity(density);
     if (next === this.#density) return;
@@ -381,16 +417,26 @@ export class TagCloudLayout {
     let dims = measure();
     const baseArea = dims.reduce((s, d) => s + (d.w + PAD) * (d.h + PAD), 0);
 
-    // Fit mode: project the font scale whose footprint fills the external box,
+    // Fit mode: project the font scale whose footprint fills the target area,
     // then verify by packing — bounded retries shrink on overflow. GROW-ONLY:
     // the scale never drops below 1, so type never gets smaller than the base
     // ramp — a too-small container overflows (min-height grows past it) at
     // legible sizes instead of cramming illegibly (#16 rework).
+    //
+    // fillFactor is the fraction of the container the cloud aims to occupy
+    // (#58). At 1 it fills the box as before; lower values leave negative
+    // space, and at 0 the scale collapses to the clamp of 1 — the authored
+    // minPx/maxPx ramp, the smallest type the layout will render. Leaving room
+    // is also what makes `density` visible: at full fill the font growth simply
+    // absorbs any space that tighter packing frees up.
     let scale = 1;
     if (fit && baseArea > 0) {
       scale = Math.min(
         2.5,
-        Math.max(1, Math.sqrt((W * externalH) / (baseArea * LOOSEN))),
+        Math.max(
+          1,
+          Math.sqrt((W * externalH * this.#fillFactor) / (baseArea * LOOSEN)),
+        ),
       );
     }
 

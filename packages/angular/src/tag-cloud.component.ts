@@ -125,6 +125,8 @@ export class TagCloudComponent
   @Input() incremental = false;
   /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
   @Input() density?: number;
+  /** Fraction of a sized container to occupy, 0-1 (default 0.75). Lower values leave negative space; unrelated to `fill`. */
+  @Input() fillFactor?: number;
   /**
    * Emitted when a tag is activated. Subscribing renders non-link tags as
    * `<button>`, so they are focusable and keyboard-operable.
@@ -161,6 +163,7 @@ export class TagCloudComponent
     }
     if (changes['fill']) this.layout?.setFill(this.fill);
     if (changes['density']) this.layout?.setDensity(this.density);
+    if (changes['fillFactor']) this.layout?.setFillFactor(this.fillFactor);
   }
 
   ngAfterViewInit(): void {
@@ -169,6 +172,7 @@ export class TagCloudComponent
       fill: this.fill,
       incremental: this.incremental,
       density: this.density,
+      fillFactor: this.fillFactor,
     });
     this.layout.attach();
   }

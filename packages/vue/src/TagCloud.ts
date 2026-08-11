@@ -55,6 +55,8 @@ export const TagCloud = defineComponent({
     incremental: { type: Boolean, default: false },
     /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
     density: { type: Number, default: undefined },
+    /** Fraction of a sized container to occupy, 0-1 (default 0.75). Lower values leave negative space; unrelated to `fill`. */
+    fillFactor: { type: Number, default: undefined },
     /** Called when a tag is activated; renders non-link tags as buttons. */
     onTagClick: {
       type: Function as PropType<
@@ -82,6 +84,7 @@ export const TagCloud = defineComponent({
         fill: props.fill,
         incremental: props.incremental,
         density: props.density,
+        fillFactor: props.fillFactor,
       });
       layout.attach();
     });
@@ -97,6 +100,10 @@ export const TagCloud = defineComponent({
     watch(
       () => props.density,
       (density) => layout?.setDensity(density),
+    );
+    watch(
+      () => props.fillFactor,
+      (fillFactor) => layout?.setFillFactor(fillFactor),
     );
     // Re-pack after the DOM reflects the new tags.
     watch(prepared, async () => {
