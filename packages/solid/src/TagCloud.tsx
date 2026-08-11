@@ -36,6 +36,8 @@ export interface TagCloudProps {
   incremental?: boolean;
   /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
   density?: number;
+  /** Fraction of a sized container to occupy, 0-1 (default 0.75). Lower values leave negative space; unrelated to `fill`. */
+  fillFactor?: number;
   /**
    * Called when a tag is activated. Supplying it renders non-link tags as
    * `<button>`, so they are focusable and keyboard-operable.
@@ -84,6 +86,7 @@ export function TagCloud(props: TagCloudProps) {
       fill: props.fill,
       incremental: props.incremental,
       density: props.density,
+      fillFactor: props.fillFactor,
     });
     layout.attach();
     onCleanup(() => {
@@ -105,6 +108,13 @@ export function TagCloud(props: TagCloudProps) {
     on(
       () => props.density,
       (density) => layout?.setDensity(density),
+      { defer: true },
+    ),
+  );
+  createEffect(
+    on(
+      () => props.fillFactor,
+      (fillFactor) => layout?.setFillFactor(fillFactor),
       { defer: true },
     ),
   );

@@ -18,6 +18,7 @@
     fill,
     incremental = false,
     density,
+    fillFactor,
     onTagClick,
   }: {
     /** The tags to lay out. */
@@ -40,6 +41,8 @@
     incremental?: boolean;
     /** How tightly terms cluster, 0–1 (default 0.5): 0 spreads them evenly across the container, 1 packs them as tightly as possible around the centre. */
     density?: number;
+    /** Fraction of a sized container to occupy, 0-1 (default 0.75). Lower values leave negative space; unrelated to `fill`. */
+    fillFactor?: number;
     /**
      * Called when a tag is activated. Supplying it renders non-link tags as
      * `<button>`, so they are focusable and keyboard-operable.
@@ -61,7 +64,12 @@
   let layout: TagCloudLayout | undefined;
 
   onMount(() => {
-    layout = new TagCloudLayout(root, { fill, incremental, density });
+    layout = new TagCloudLayout(root, {
+      fill,
+      incremental,
+      density,
+      fillFactor,
+    });
     layout.attach();
     return () => layout?.destroy();
   });
@@ -81,6 +89,9 @@
   });
   $effect(() => {
     layout?.setDensity(density);
+  });
+  $effect(() => {
+    layout?.setFillFactor(fillFactor);
   });
 </script>
 

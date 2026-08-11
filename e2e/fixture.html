@@ -27,6 +27,9 @@
       const density = params.has('density')
         ? Number(params.get('density'))
         : undefined;
+      const fillFactor = params.has('fillFactor')
+        ? Number(params.get('fillFactor'))
+        : undefined;
       if (params.get('dir') === 'rtl') document.documentElement.dir = 'rtl';
       if (params.has('auto'))
         document.getElementById('box').style.height = 'auto';
@@ -58,6 +61,7 @@
         fill,
         incremental,
         density,
+        fillFactor,
         // ?click makes non-link tags buttons and records activations
         onTagClick: params.has('click')
           ? (item) => window.clicks.push(item.label)

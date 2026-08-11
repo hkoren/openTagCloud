@@ -296,6 +296,7 @@
         <a class="example-link" href="#theming">Theming</a>
         <a class="example-link" href="#colors">Per-tag color</a>
         <a class="example-link" href="#density">Density</a>
+        <a class="example-link" href="#fill">Fill factor</a>
         <a class="example-link" href="#element">Custom element</a>
         <a class="example-link" href="#pages">Full pages</a>
       </nav>
@@ -349,11 +350,12 @@
               overlap at any setting — drag the slider.
             </p>
             <p>
-              Each box below is about twice as tall as the words strictly need,
-              which is where the setting shows best. Packing words closer
-              together fills more of the box and frees room for the layout to
-              scale the type up, so the same words render noticeably larger at a
-              high density than a low one.
+              These boxes hold their type at one size (via
+              <a href="#fill">fill factor</a> 0.6), so clustering is the only
+              thing changing: the same words at the same size, drawn further
+              apart or closer together. At full fill the layout would instead
+              grow the type to absorb the space that tighter packing frees up,
+              and the setting would look like it did nothing.
             </p>
           </div>
           <div class="density-controls">
@@ -382,6 +384,38 @@
             <figure>
               <div class="cloud" id="density-100"></div>
               <figcaption><b>1</b> — clustered, corners empty</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="card wide" id="fill">
+          <div class="copy">
+            <h2>Fill factor</h2>
+            <p>
+              In a fixed-height box the layout scales the type up until the
+              cloud fills it. <code>fillFactor</code> (0–1) says how much of the
+              box to claim: <b>1</b> fills it with the largest type that fits,
+              <b>0</b> leaves the type at the size you authored and as much
+              negative space as that implies. The default is <b>0.75</b>.
+            </p>
+            <p>
+              It also governs whether <a href="#density">density</a> is visible
+              — at full fill, growing the type simply absorbs the space that
+              tighter packing frees up.
+            </p>
+          </div>
+          <div class="density-compare">
+            <figure>
+              <div class="cloud" id="fill-100"></div>
+              <figcaption><b>1</b> — fills the box</figcaption>
+            </figure>
+            <figure>
+              <div class="cloud" id="fill-75"></div>
+              <figcaption><b>0.75</b> — the default</figcaption>
+            </figure>
+            <figure>
+              <div class="cloud" id="fill-35"></div>
+              <figcaption><b>0.35</b> — deliberate negative space</figcaption>
             </figure>
           </div>
         </section>
@@ -528,7 +562,7 @@
       const densityCloud = openTagCloud.mount(
         document.querySelector('#density-cloud'),
         manyWords,
-        { minPx: 12, maxPx: 34, density: 0.5 },
+        { minPx: 12, maxPx: 34, density: 0.5, fillFactor: 0.6 },
       );
       const densityRange = document.querySelector('#density-range');
       const densityValue = document.querySelector('#density-value');
@@ -546,6 +580,21 @@
           minPx: 10,
           maxPx: 26,
           density,
+          // room to spare, so what changes between these three is the packing
+          // rather than the type size (see the fill factor example below)
+          fillFactor: 0.6,
+        });
+      }
+
+      for (const [id, fillFactor] of [
+        ['#fill-100', 1],
+        ['#fill-75', 0.75],
+        ['#fill-35', 0.35],
+      ]) {
+        openTagCloud.mount(document.querySelector(id), manyWords, {
+          minPx: 10,
+          maxPx: 26,
+          fillFactor,
         });
       }
 
