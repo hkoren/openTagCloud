@@ -28,6 +28,11 @@ export interface TagCloudLayoutOptions {
    * the authored `minPx`/`maxPx` ramp. Only applies when the container imposes
    * a height — auto-height containers already pack to their natural area.
    *
+   * Treat it as a target rather than a precise ratio: the layout grows the
+   * ramp in discrete steps and retries if the result overflows, so two nearby
+   * values (say 1 and 0.75) can land on the same step or even swap which covers
+   * slightly more. The trend across the range is what is meaningful.
+   *
    * Note this is unrelated to `fill`, which controls whether terms spread to
    * cover the container's height.
    */

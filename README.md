@@ -357,6 +357,10 @@ to aim for:
 - `0` — no growth at all; the type stays at the `minPx`/`maxPx` ramp you
   authored, leaving as much empty space as that implies.
 
+Treat it as a target rather than an exact ratio: the type is scaled in discrete
+steps with a retry if the result overflows, so two nearby values can land on the
+same step. The trend across the range is what matters.
+
 It also decides whether **`density` is visible**: at full fill, the font growth
 absorbs whatever space tighter packing frees up, so clustering has nothing to
 show. Leave some room and the two settings compose — `density` moves the words
