@@ -7,7 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All packages in the monorepo share a version and are released together.
 Each entry links to its GitHub release, which carries the fuller narrative.
 
-## Unreleased
+## [0.6.0] — 2026-08-11
 
 ### Added
 
@@ -232,5 +232,6 @@ installed directly from GitHub.
 [#40]: https://github.com/hkoren/openTagCloud/issues/40
 [#41]: https://github.com/hkoren/openTagCloud/issues/41
 [#42]: https://github.com/hkoren/openTagCloud/issues/42
+[0.6.0]: https://github.com/hkoren/openTagCloud/releases/tag/v0.6.0
 [#51]: https://github.com/hkoren/openTagCloud/issues/51
 [#58]: https://github.com/hkoren/openTagCloud/issues/58
