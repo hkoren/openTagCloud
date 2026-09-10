@@ -7,6 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All packages in the monorepo share a version and are released together.
 Each entry links to its GitHub release, which carries the fuller narrative.
 
+## [0.6.1] — 2026-09-09
+
+Security housekeeping only. No runtime code changed, so the published bundles
+are byte-identical to 0.6.0 apart from the version stamp — upgrading is
+optional unless you build from this repo. Every advisory below is in the
+development tree; none of it is reachable from a published bundle.
+
+### Security
+
+- Updated the test runner to **vitest 4.1.11**, clearing [GHSA-82fw-gwwq-j7x9]
+  (path traversal / arbitrary file read via a `@vitest/mocker` redirect mock).
+  This was the last open Dependabot alert, filed against all five workspaces
+  that declare `vitest`, and its only fix was a major from the `^3.0.0` those
+  workspaces pinned. The five `vitest.config.ts` files needed no migration.
+- Pinned **`next` as a devDependency at `^16.3.4`**, taking the repo off two
+  critical unauthenticated-RCE advisories ([GHSA-p293-qw3h-jr36],
+  [GHSA-2xp9-vwfh-vxw4]). `next` had reached the tree only as a peer
+  dependency, which npm will not raise on its own, so the lockfile sat on
+  16.3.0 through both `npm audit fix` and `npm update`. The **peer range stays
+  at `>=13.0.0`** deliberately: narrowing it would push every consumer onto a
+  newer Next.js to fix a vulnerability in this repo's own CI install.
+- Cleared five further advisories in the development tree — `fast-uri`,
+  `browserslist`, `js-yaml`, `baseline-browser-mapping`, and `sharp`.
+
+`npm audit` reports zero vulnerabilities.
+
 ## [0.6.0] — 2026-08-11
 
 ### Added
@@ -232,6 +258,10 @@ installed directly from GitHub.
 [#40]: https://github.com/hkoren/openTagCloud/issues/40
 [#41]: https://github.com/hkoren/openTagCloud/issues/41
 [#42]: https://github.com/hkoren/openTagCloud/issues/42
+[0.6.1]: https://github.com/hkoren/openTagCloud/releases/tag/v0.6.1
 [0.6.0]: https://github.com/hkoren/openTagCloud/releases/tag/v0.6.0
 [#51]: https://github.com/hkoren/openTagCloud/issues/51
 [#58]: https://github.com/hkoren/openTagCloud/issues/58
+[GHSA-82fw-gwwq-j7x9]: https://github.com/advisories/GHSA-82fw-gwwq-j7x9
+[GHSA-p293-qw3h-jr36]: https://github.com/advisories/GHSA-p293-qw3h-jr36
+[GHSA-2xp9-vwfh-vxw4]: https://github.com/advisories/GHSA-2xp9-vwfh-vxw4

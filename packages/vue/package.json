@@ -1,6 +1,6 @@
 {
   "name": "@opentagcloud/vue",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Vue 3 adapter for openTagCloud — a dependency-free, self-packing, SSR-friendly tag cloud.",
   "keywords": [
     "vue",
@@ -43,7 +43,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@opentagcloud/core": "^0.6.0"
+    "@opentagcloud/core": "^0.6.1"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
@@ -52,7 +52,7 @@
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
-    "vitest": "^3.0.0",
+    "vitest": "^4.1.11",
     "vue": "^3.5.0"
   },
   "publishConfig": {
