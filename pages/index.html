@@ -47,13 +47,39 @@
         width: min(1120px, 100%);
         margin-inline: auto;
       }
-      .eyebrow {
+      .eyebrow-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
         margin: 0 0 0.75rem;
+      }
+      .eyebrow {
+        margin: 0;
         color: #a5b4fc;
         font-size: 0.78rem;
         font-weight: 800;
         letter-spacing: 0.16em;
         text-transform: uppercase;
+      }
+      /* Version of the bundle these demos actually run, injected at build time
+         by scripts/build-pages.mjs from packages/core/package.json. */
+      .version-badge {
+        border: 1px solid #ffffff40;
+        border-radius: 999px;
+        padding: 0.1rem 0.6rem;
+        color: #c7d2fe;
+        background: #ffffff12;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        font-variant-numeric: tabular-nums;
+      }
+      .version-badge:hover,
+      .version-badge:focus-visible {
+        color: white;
+        background: #ffffff24;
       }
       h1 {
         max-width: 760px;
@@ -271,7 +297,15 @@
   <body>
     <header class="hero">
       <div class="hero-inner">
-        <p class="eyebrow">Live examples</p>
+        <div class="eyebrow-row">
+          <p class="eyebrow">Live examples</p>
+          <a
+            class="version-badge"
+            data-otc-version-link
+            href="https://github.com/hkoren/openTagCloud/releases/tag/v0.6.1"
+            >v0.6.1</a
+          >
+        </div>
         <h1>openTagCloud</h1>
         <p class="lede">
           A dependency-free, responsive tag cloud with adapters for Svelte,
