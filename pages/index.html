@@ -193,59 +193,59 @@
       .wide .cloud {
         height: 270px;
       }
-      .density-controls {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.75rem;
+      /* Three sliders driving one cloud. Each control is a labelled column so
+         the readout sits next to its own slider rather than in a shared row. */
+      .playground-controls {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.65rem 1.25rem;
         margin: 0.9rem 0.65rem 0;
-        font-weight: 600;
+      }
+      .playground-control {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 0.4rem 0.6rem;
+      }
+      .playground-control label {
+        font-weight: 700;
         color: #3c4763;
       }
-      .density-controls input[type='range'] {
-        flex: 1 1 220px;
-        min-width: 180px;
+      .playground-control input[type='range'] {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0;
         accent-color: #4338ca;
       }
-      .density-value {
-        min-width: 2.6rem;
+      .playground-value {
+        min-width: 2.9rem;
         padding: 0.15rem 0.45rem;
         border-radius: 6px;
         color: #4338ca;
         background: #eef2ff;
         font-variant-numeric: tabular-nums;
+        font-weight: 600;
         text-align: center;
       }
-      .density-compare {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.65rem;
-        margin: 0.65rem;
-      }
-      .density-compare figure {
+      .playground-hint {
+        grid-column: 1 / -1;
         margin: 0;
-      }
-      /* Roughly twice the height the words need. That headroom is what makes
-         density legible: a tighter cloud leaves the layout room to scale the
-         type up, so the same words render markedly larger in the same box. */
-      .density-compare .cloud {
-        height: 200px;
-        margin: 0 0 0.4rem;
-      }
-      #density-cloud {
-        height: 260px;
-      }
-      .density-compare figcaption {
         color: #647087;
         font-size: 0.85rem;
-        text-align: center;
+        line-height: 1.45;
       }
-      .density-compare figcaption b {
-        color: #172033;
+      /* Tall enough that fill factor has somewhere to go: at 0.35 the type
+         must have room to sit small and leave visible negative space, which a
+         box cropped to the words would hide. */
+      #playground-cloud {
+        height: 380px;
       }
       @media (max-width: 760px) {
-        .density-compare {
+        .playground-controls {
           grid-template-columns: 1fr;
+        }
+        #playground-cloud {
+          height: 320px;
         }
       }
       .page-list {
@@ -329,8 +329,7 @@
         <a class="example-link" href="#basic">Basic</a>
         <a class="example-link" href="#theming">Theming</a>
         <a class="example-link" href="#colors">Per-tag color</a>
-        <a class="example-link" href="#density">Density</a>
-        <a class="example-link" href="#fill">Fill factor</a>
+        <a class="example-link" href="#playground">Playground</a>
         <a class="example-link" href="#element">Custom element</a>
         <a class="example-link" href="#pages">Full pages</a>
       </nav>
@@ -374,84 +373,84 @@
           <div class="cloud" id="color-cloud"></div>
         </section>
 
-        <section class="card wide" id="density">
+        <section class="card wide" id="playground">
           <div class="copy">
-            <h2>Density</h2>
+            <h2>Playground</h2>
             <p>
-              <code>density</code> (0–1) sets how tightly words cluster:
-              <b>0</b> spreads them evenly across the container, <b>1</b> packs
-              them around the centre and leaves the corners empty. Words never
-              overlap at any setting — drag the slider.
+              Three settings, one cloud. <code>density</code> and
+              <code>fillFactor</code> interact, which is easier to feel than to
+              read about: raise fill factor to <b>1</b> and density stops
+              appearing to do anything, because the layout grows the type to
+              absorb whatever space tighter packing just freed up. Pull fill
+              factor down and the same density changes become obvious.
             </p>
             <p>
-              These boxes hold their type at one size (via
-              <a href="#fill">fill factor</a> 0.6), so clustering is the only
-              thing changing: the same words at the same size, drawn further
-              apart or closer together. At full fill the layout would instead
-              grow the type to absorb the space that tighter packing frees up,
-              and the setting would look like it did nothing.
+              Words never overlap at any combination, and the layout is
+              deterministic — the same three values always produce the same
+              cloud.
             </p>
           </div>
-          <div class="density-controls">
-            <label for="density-range">density</label>
-            <input
-              id="density-range"
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value="0.5"
-              aria-describedby="density-value"
-            />
-            <output id="density-value" class="density-value">0.50</output>
+          <div class="playground-controls">
+            <div class="playground-control">
+              <label for="pg-density">density</label>
+              <output id="pg-density-value" class="playground-value"
+                >0.50</output
+              >
+              <input
+                id="pg-density"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value="0.5"
+                aria-describedby="pg-density-hint"
+              />
+              <p class="playground-hint" id="pg-density-hint">
+                How tightly words cluster. <b>0</b> spreads them evenly,
+                <b>1</b> packs them around the centre and leaves the corners
+                empty. Default 0.5.
+              </p>
+            </div>
+            <div class="playground-control">
+              <label for="pg-fill">fillFactor</label>
+              <output id="pg-fill-value" class="playground-value">0.60</output>
+              <input
+                id="pg-fill"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value="0.6"
+                aria-describedby="pg-fill-hint"
+              />
+              <p class="playground-hint" id="pg-fill-hint">
+                How much of the box to claim. <b>1</b> grows the type until the
+                cloud fills it — when crowded the ramp can outgrow the box and a
+                word spills past the edge, by design. <b>0</b> keeps the
+                authored size. The library default is 0.75; this demo starts at
+                0.6 so density stays visible.
+              </p>
+            </div>
+            <div class="playground-control">
+              <label for="pg-count">items</label>
+              <output id="pg-count-value" class="playground-value">30</output>
+              <input
+                id="pg-count"
+                type="range"
+                min="5"
+                max="60"
+                step="1"
+                value="30"
+                aria-describedby="pg-count-hint"
+              />
+              <p class="playground-hint" id="pg-count-hint">
+                How many words to pack. Tags that survive a change keep their
+                position, so adding and removing words animates rather than
+                reshuffling.
+              </p>
+            </div>
           </div>
-          <div class="cloud" id="density-cloud"></div>
-          <div class="density-compare">
-            <figure>
-              <div class="cloud" id="density-0"></div>
-              <figcaption><b>0</b> — evenly distributed</figcaption>
-            </figure>
-            <figure>
-              <div class="cloud" id="density-50"></div>
-              <figcaption><b>0.5</b> — the default</figcaption>
-            </figure>
-            <figure>
-              <div class="cloud" id="density-100"></div>
-              <figcaption><b>1</b> — clustered, corners empty</figcaption>
-            </figure>
-          </div>
-        </section>
-
-        <section class="card wide" id="fill">
-          <div class="copy">
-            <h2>Fill factor</h2>
-            <p>
-              In a fixed-height box the layout scales the type up until the
-              cloud fills it. <code>fillFactor</code> (0–1) says how much of the
-              box to claim: <b>1</b> fills it with the largest type that fits,
-              <b>0</b> leaves the type at the size you authored and as much
-              negative space as that implies. The default is <b>0.75</b>.
-            </p>
-            <p>
-              It also governs whether <a href="#density">density</a> is visible
-              — at full fill, growing the type simply absorbs the space that
-              tighter packing frees up.
-            </p>
-          </div>
-          <div class="density-compare">
-            <figure>
-              <div class="cloud" id="fill-100"></div>
-              <figcaption><b>1</b> — fills the box</figcaption>
-            </figure>
-            <figure>
-              <div class="cloud" id="fill-75"></div>
-              <figcaption><b>0.75</b> — the default</figcaption>
-            </figure>
-            <figure>
-              <div class="cloud" id="fill-35"></div>
-              <figcaption><b>0.35</b> — deliberate negative space</figcaption>
-            </figure>
-          </div>
+          <div class="cloud" id="playground-cloud"></div>
         </section>
 
         <section class="card" id="element">
@@ -549,6 +548,36 @@
         'Racket',
         'Prolog',
         'COBOL',
+        'Assembly',
+        'Objective-C',
+        'F#',
+        'VB.NET',
+        'Delphi',
+        'Ada',
+        'Scheme',
+        'Smalltalk',
+        'Tcl',
+        'Verilog',
+        'VHDL',
+        'MATLAB',
+        'R',
+        'SAS',
+        'Bash',
+        'PowerShell',
+        'Awk',
+        'Sed',
+        'SQL',
+        'GraphQL',
+        'Solidity',
+        'Move',
+        'Hack',
+        'Reason',
+        'PureScript',
+        'Idris',
+        'Agda',
+        'Coq',
+        'Forth',
+        'APL',
       ].map((label, i) => ({ label, weight: ((i * 37) % 100) + 1 }));
 
       const languages = [
@@ -591,44 +620,30 @@
         { minPx: 13, maxPx: 45 },
       );
       const npmPkg = (name) => `https://www.npmjs.com/package/${name}`;
-      // Density: one interactive cloud driven by the slider, plus three fixed
-      // settings side by side so the difference is visible without interacting.
-      const densityCloud = openTagCloud.mount(
-        document.querySelector('#density-cloud'),
-        manyWords,
-        { minPx: 12, maxPx: 34, density: 0.5, fillFactor: 0.6 },
+      // Playground: three sliders over one cloud. density and fillFactor are
+      // pushed through the setters so the layout re-packs in place; changing
+      // the item count goes through update(), which keeps surviving tags where
+      // they are and animates the difference.
+      const pgCloud = openTagCloud.mount(
+        document.querySelector('#playground-cloud'),
+        manyWords.slice(0, 30),
+        { minPx: 11, maxPx: 34, density: 0.5, fillFactor: 0.6 },
       );
-      const densityRange = document.querySelector('#density-range');
-      const densityValue = document.querySelector('#density-value');
-      densityRange.addEventListener('input', () => {
-        const d = Number(densityRange.value);
-        densityValue.textContent = d.toFixed(2);
-        densityCloud.setDensity(d);
-      });
-      for (const [id, density] of [
-        ['#density-0', 0],
-        ['#density-50', 0.5],
-        ['#density-100', 1],
+      for (const [id, format, apply] of [
+        ['density', (v) => v.toFixed(2), (v) => pgCloud.setDensity(v)],
+        ['fill', (v) => v.toFixed(2), (v) => pgCloud.setFillFactor(v)],
+        [
+          'count',
+          (v) => String(v),
+          (v) => pgCloud.update(manyWords.slice(0, v)),
+        ],
       ]) {
-        openTagCloud.mount(document.querySelector(id), manyWords, {
-          minPx: 10,
-          maxPx: 26,
-          density,
-          // room to spare, so what changes between these three is the packing
-          // rather than the type size (see the fill factor example below)
-          fillFactor: 0.6,
-        });
-      }
-
-      for (const [id, fillFactor] of [
-        ['#fill-100', 1],
-        ['#fill-75', 0.75],
-        ['#fill-35', 0.35],
-      ]) {
-        openTagCloud.mount(document.querySelector(id), manyWords, {
-          minPx: 10,
-          maxPx: 26,
-          fillFactor,
+        const input = document.querySelector(`#pg-${id}`);
+        const value = document.querySelector(`#pg-${id}-value`);
+        input.addEventListener('input', () => {
+          const v = Number(input.value);
+          value.textContent = format(v);
+          apply(v);
         });
       }
 
