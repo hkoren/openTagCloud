@@ -25,11 +25,11 @@
     "prettier-plugin-svelte": "^3.3.2"
   },
   "overrides": {
-    "@angular/common": "^20.3.0",
-    "@angular/compiler": "^20.3.0",
-    "@angular/compiler-cli": "^20.3.0",
-    "@angular/core": "^20.3.0",
-    "@angular/platform-browser": "^20.3.0",
-    "@angular/platform-browser-dynamic": "^20.3.0"
+    "@angular/common": "^20.3.28",
+    "@angular/compiler": "^20.3.28",
+    "@angular/compiler-cli": "^20.3.28",
+    "@angular/core": "^20.3.28",
+    "@angular/platform-browser": "^20.3.28",
+    "@angular/platform-browser-dynamic": "^20.3.28"
   }
 }
