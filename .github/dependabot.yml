@@ -1,0 +1,50 @@
+version: 2
+updates:
+  # One root entry covers every workspace in packages/* through the root
+  # package-lock.json.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    # Let new releases age before proposing them (security updates are exempt).
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
+    groups:
+      # Security fixes land as one PR instead of one per advisory.
+      security:
+        applies-to: security-updates
+        patterns: ['*']
+      # Angular packages must move in lockstep with ng-packagr and the root
+      # `overrides` block, so they never mix with unrelated bumps.
+      angular:
+        patterns: ['@angular/*', 'ng-packagr', 'zone.js']
+        update-types: [minor, patch]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Angular majors are a deliberate migration: the root `overrides` pin
+      # ^20.x, which Dependabot does not rewrite, so a major PR would leave the
+      # lockfile inconsistent.
+      - dependency-name: '@angular/*'
+        update-types: [version-update:semver-major]
+      - dependency-name: ng-packagr
+        update-types: [version-update:semver-major]
+      # @angular/compiler-cli 20 requires typescript <6.0.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ['*']
