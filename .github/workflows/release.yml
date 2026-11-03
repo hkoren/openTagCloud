@@ -39,11 +39,11 @@ jobs:
     env:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Node 24 for npm >= 11.5.1: trusted publishing (OIDC) needs it, and
       # Node 22 still bundles npm 10.9.x. The explicit upgrade keeps this true
       # even if the runner image changes, and the echo makes it visible in logs.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
