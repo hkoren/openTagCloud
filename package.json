@@ -31,7 +31,21 @@
     "@angular/core": "^20.3.35",
     "@angular/platform-browser": "^20.3.35",
     "@angular/platform-browser-dynamic": "^20.3.35",
+    "@jest/reporters": {
+      "glob": "^14.0.2"
+    },
     "@vue/test-utils": {
+      "glob": "^14.0.2",
+      "minimatch": "^11.0.1"
+    },
+    "jest-config": {
+      "glob": "^14.0.2"
+    },
+    "jest-runtime": {
+      "glob": "^14.0.2"
+    },
+    "test-exclude": {
+      "glob": "^14.0.2",
       "minimatch": "^11.0.1"
     }
   }

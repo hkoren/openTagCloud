@@ -1,4 +1,6 @@
-import 'jest-preset-angular/setup-jest';
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+
+setupZoneTestEnv();
 
 // jsdom has no ResizeObserver; the layout engine only needs construct/observe/disconnect.
 class ResizeObserverStub {
