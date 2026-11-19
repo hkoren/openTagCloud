@@ -79,7 +79,7 @@
     "@sveltejs/package": "^2.3.7",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@testing-library/svelte": "^5.2.4",
-    "jsdom": "^26.0.0",
+    "jsdom": "^31.0.1",
     "publint": "^0.3.25",
     "svelte": "^5.16.0",
     "svelte-check": "^4.1.1",
