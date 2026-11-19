@@ -24,8 +24,34 @@ updates:
       angular:
         patterns: ['@angular/*', 'ng-packagr', 'zone.js']
         update-types: [minor, patch]
+      # Toolchain families whose majors only work together (e.g.
+      # jest-environment-jsdom 30 needs jest 30 and jest-preset-angular 17;
+      # vite-plugin-svelte 7 needs vite 8), so majors arrive as one PR.
+      jest:
+        patterns: ['jest', 'jest-*', '@jest/*', '@types/jest', 'ts-jest']
+      vite:
+        patterns:
+          - vite
+          - vitest
+          - '@vitest/*'
+          - '@sveltejs/vite-plugin-svelte'
+          - vite-plugin-solid
       minor-and-patch:
         update-types: [minor, patch]
+        exclude-patterns:
+          - '@angular/*'
+          - ng-packagr
+          - zone.js
+          - jest
+          - jest-*
+          - '@jest/*'
+          - '@types/jest'
+          - ts-jest
+          - vite
+          - vitest
+          - '@vitest/*'
+          - '@sveltejs/vite-plugin-svelte'
+          - vite-plugin-solid
     ignore:
       # Angular majors are a deliberate migration: the root `overrides` pin
       # ^20.x, which Dependabot does not rewrite, so a major PR would leave the
@@ -36,6 +62,13 @@ updates:
         update-types: [version-update:semver-major]
       # @angular/compiler-cli 20 requires typescript <6.0.
       - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # Angular 20 pins zone.js ~0.15; for a 0.x package a "minor" is breaking
+      # (0.16 can't be loaded by jest-preset-angular's zone setup).
+      - dependency-name: zone.js
+        update-types: [version-update:semver-minor, version-update:semver-major]
+      # babel-preset-solid peers on @babel/core ^7.
+      - dependency-name: '@babel/core'
         update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
